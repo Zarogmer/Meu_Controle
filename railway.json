@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm ci && npm run build && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static"
+    "buildCommand": "npm run build && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static"
   },
   "deploy": {
     "startCommand": "node .next/standalone/server.js",
