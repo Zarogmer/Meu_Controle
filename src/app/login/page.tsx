@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck, BriefcaseBusiness, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Login screen is always light regardless of the user's saved theme.
+  // We flip the <html> class directly because next-themes doesn't expose
+  // per-route forcedTheme, and we restore the previous class on unmount.
+  useEffect(() => {
+    const html = document.documentElement;
+    const hadDark = html.classList.contains('dark');
+    html.classList.remove('dark');
+    html.style.colorScheme = 'light';
+    return () => {
+      if (hadDark) html.classList.add('dark');
+      html.style.colorScheme = '';
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
