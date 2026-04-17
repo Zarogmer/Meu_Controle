@@ -1,6 +1,6 @@
 # Meu Controle
 
-Sistema SaaS multi-tenant para pequenas lojas gerenciarem estoque, vendas e operacao.
+Sistema SaaS multi-tenant para pequenos negócios gerenciarem operação, produtos, caixa e rotina.
 
 ## Stack
 
@@ -13,18 +13,18 @@ Sistema SaaS multi-tenant para pequenas lojas gerenciarem estoque, vendas e oper
 
 ## Modelo de acesso
 
-- O sistema e multi-tenant.
+- O sistema é multi-tenant.
 - Apenas a conta `tech` da plataforma pode criar novas lojas.
-- O cadastro publico foi desativado.
-- Cada nova loja criada pelo painel admin ja nasce com um usuario `owner`.
+- O cadastro público foi desativado.
+- Cada nova loja criada pelo painel admin já nasce com um usuário `owner`.
 
-Esses valores podem ser alterados pelas variaveis:
+Esses valores podem ser personalizados pelas variáveis:
 
 - `TECH_ADMIN_NAME`
 - `TECH_ADMIN_EMAIL`
 - `TECH_ADMIN_PASSWORD`
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
 Use o arquivo `.env.example` como base:
 
@@ -32,8 +32,8 @@ Use o arquivo `.env.example` como base:
 DATABASE_URL=postgresql://postgres:password@host:5432/railway
 JWT_SECRET=troque-esta-chave-por-uma-chave-segura
 TECH_ADMIN_NAME=Guilherme
-TECH_ADMIN_EMAIL=guilherme@meuestoque.com
-TECH_ADMIN_PASSWORD=admin123
+TECH_ADMIN_EMAIL=guilherme@meucontrole.com
+TECH_ADMIN_PASSWORD=defina-uma-senha-segura
 ```
 
 ## Como rodar com Railway
@@ -47,26 +47,26 @@ npm run dev
 O comando `railway:setup` faz duas coisas:
 
 1. cria/atualiza o schema no PostgreSQL com `drizzle-kit push`
-2. garante a criacao da conta `tech`
+2. garante a criação da conta `tech`
 
 ## Deploy no Railway
 
-Sugestao de fluxo:
+Sugestão de fluxo:
 
-1. Conecte este repositorio GitHub ao Railway.
+1. Conecte este repositório GitHub ao Railway.
 2. Adicione um banco PostgreSQL no mesmo projeto.
 3. Na sua service web, crie uma Reference Variable `DATABASE_URL` apontando para o Postgres.
-4. Configure tambem `JWT_SECRET` e, se quiser personalizar a conta inicial, `TECH_ADMIN_*`.
+4. Configure também `JWT_SECRET` e, se quiser personalizar a conta inicial, `TECH_ADMIN_*`.
 5. Em `Settings -> Deploy -> Pre-deploy Command`, defina `npm run railway:setup`.
-6. Gere o dominio publico em `Settings -> Networking`.
+6. Gere o domínio público em `Settings -> Networking`.
 
-Configuracao aplicada neste projeto para Railway:
+Configuração aplicada neste projeto para Railway:
 
 - `next.config.ts` usa `output: "standalone"`
 - `npm start` sobe `node .next/standalone/server.js`
 - `npm run railway:setup` prepara schema e garante a conta `tech`
 
-## Observacoes
+## Observações
 
-- O upload de imagens continua usando `@vercel/blob`. Se quiser upload em producao, configure o token correspondente.
-- O `netlify.toml` ficou legado e pode ser removido depois se voce nao for mais usar Netlify.
+- O upload de imagens continua usando `@vercel/blob`. Se quiser upload em produção, configure o token correspondente.
+- O `netlify.toml` ficou legado e pode ser removido depois se você não for mais usar Netlify.

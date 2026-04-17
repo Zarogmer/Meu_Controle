@@ -49,7 +49,7 @@ export default function VendaModal({ open, onClose, produto, onSaved }: VendaMod
       return;
     }
     if (qtd > produto.quantidade) {
-      toast.error(`Estoque insuficiente. Disponivel: ${produto.quantidade}`);
+      toast.error(`Estoque insuficiente. Disponível: ${produto.quantidade}`);
       return;
     }
 
@@ -84,7 +84,7 @@ export default function VendaModal({ open, onClose, produto, onSaved }: VendaMod
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Registrar Venda</DialogTitle>
+          <DialogTitle>Registrar venda</DialogTitle>
           <DialogDescription>
             Registre uma venda para o produto selecionado.
           </DialogDescription>
@@ -100,7 +100,7 @@ export default function VendaModal({ open, onClose, produto, onSaved }: VendaMod
           {/* Quantidade */}
           <div className="space-y-1.5">
             <Label htmlFor="vm-qtd">
-              Quantidade (disponivel: {produto.quantidade})
+              Quantidade disponível: {produto.quantidade}
             </Label>
             <Input
               id="vm-qtd"
@@ -131,7 +131,7 @@ export default function VendaModal({ open, onClose, produto, onSaved }: VendaMod
               Cancelar
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Registrando...' : 'Registrar Venda'}
+              {submitting ? 'Registrando...' : 'Registrar venda'}
             </Button>
           </DialogFooter>
         </form>

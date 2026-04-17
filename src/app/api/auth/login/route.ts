@@ -46,6 +46,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Banco de dados nao configurado no ambiente local. Configure a DATABASE_URL do Railway.' },
+        { status: 500 }
+      );
+    }
+
     await ensurePlatformSuperAdmin();
 
     const body = await request.json();

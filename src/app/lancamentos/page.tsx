@@ -103,7 +103,7 @@ function tipoBadge(tipo: string) {
   if (tipo === 'servico') {
     return (
       <Badge variant="outline" className="border-violet-200 text-violet-700">
-        Servico
+        Serviço
       </Badge>
     );
   }
@@ -154,7 +154,7 @@ export default function LancamentosPage() {
       const data = await res.json();
       setLancamentos(data.lancamentos);
     } catch {
-      toast.error('Erro ao carregar lancamentos');
+      toast.error('Erro ao carregar lançamentos.');
     } finally {
       setLoading(false);
     }
@@ -206,11 +206,11 @@ export default function LancamentosPage() {
 
   async function handleSave() {
     if (!fDescricao.trim()) {
-      toast.error('Descricao e obrigatoria');
+      toast.error('Descrição é obrigatória.');
       return;
     }
     if (!fValor || parseFloat(fValor) <= 0) {
-      toast.error('Valor deve ser maior que zero');
+      toast.error('O valor deve ser maior que zero.');
       return;
     }
 
@@ -241,7 +241,7 @@ export default function LancamentosPage() {
         throw new Error(data.error || 'Erro ao salvar');
       }
 
-      toast.success(editing ? 'Lancamento atualizado!' : 'Lancamento registrado!');
+      toast.success(editing ? 'Lançamento atualizado com sucesso.' : 'Lançamento registrado com sucesso.');
       setDialogOpen(false);
       fetchLancamentos();
     } catch (err) {
@@ -281,10 +281,13 @@ export default function LancamentosPage() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Lancamentos</h1>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Controle de caixa</p>
+            <h1 className="text-2xl font-bold tracking-tight">Movimentações financeiras</h1>
+          </div>
           <Button onClick={openCreate}>
             <Plus className="size-4" data-icon="inline-start" />
-            Novo Lancamento
+            Nova movimentação
           </Button>
         </div>
 
@@ -359,7 +362,7 @@ export default function LancamentosPage() {
         {/* Table */}
         <Card className="rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-none">
           <CardHeader>
-            <CardTitle>Lista de Lancamentos</CardTitle>
+            <CardTitle>Movimentações registradas</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -371,10 +374,10 @@ export default function LancamentosPage() {
             ) : lancamentos.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Receipt className="size-12 text-muted-foreground/30" />
-                <p className="mt-4 text-muted-foreground">Nenhum lancamento registrado.</p>
+                <p className="mt-4 text-muted-foreground">Nenhuma movimentação registrada.</p>
                 <Button variant="outline" className="mt-4" onClick={openCreate}>
                   <Plus className="size-4" data-icon="inline-start" />
-                  Registrar primeiro lancamento
+                  Registrar primeira movimentação
                 </Button>
               </div>
             ) : (
@@ -383,12 +386,12 @@ export default function LancamentosPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tipo</TableHead>
-                      <TableHead>Descricao</TableHead>
+                      <TableHead>Descrição</TableHead>
                       <TableHead className="hidden sm:table-cell">Cliente</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       <TableHead className="hidden md:table-cell">Data</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Acoes</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -440,9 +443,9 @@ export default function LancamentosPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Editar Lancamento' : 'Novo Lancamento'}</DialogTitle>
+            <DialogTitle>{editing ? 'Editar movimentação' : 'Nova movimentação'}</DialogTitle>
             <DialogDescription>
-              {editing ? 'Atualize os dados do lancamento.' : 'Registre um novo lancamento.'}
+              {editing ? 'Atualize os dados da movimentação.' : 'Registre uma nova movimentação do caixa.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -457,7 +460,7 @@ export default function LancamentosPage() {
                   onChange={(e) => setFTipo(e.target.value)}
                 >
                   <option value="produto">Produto</option>
-                  <option value="servico">Servico</option>
+                  <option value="servico">Serviço</option>
                 </select>
               </div>
               <div className="space-y-1.5">
@@ -476,7 +479,7 @@ export default function LancamentosPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="l-descricao">Descricao *</Label>
+              <Label htmlFor="l-descricao">Descrição *</Label>
               <Input
                 id="l-descricao"
                 placeholder="Ex: Venda de camisetas..."
@@ -521,7 +524,7 @@ export default function LancamentosPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="l-obs">Observacao</Label>
+              <Label htmlFor="l-obs">Observação</Label>
               <Textarea
                 id="l-obs"
                 placeholder="Anotacoes extras..."
@@ -547,9 +550,9 @@ export default function LancamentosPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Excluir Lancamento</DialogTitle>
+            <DialogTitle>Excluir movimentação</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir o lancamento{' '}
+              Tem certeza que deseja excluir a movimentação{' '}
               <strong>{deletingLancamento?.descricao}</strong> no valor de{' '}
               <strong>{deletingLancamento ? formatCentavos(deletingLancamento.valor) : ''}</strong>?
             </DialogDescription>

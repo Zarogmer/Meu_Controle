@@ -12,13 +12,13 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Meu Estoque",
-  description: "Sistema de controle de estoque para lojas",
+  title: "Meu Controle",
+  description: "Painel interno de gestao, operacao e acompanhamento do negocio.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Meu Estoque",
+    title: "Meu Controle",
   },
   icons: {
     icon: "/icons/icon-192.png",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0D0C15",
+  themeColor: "#2563eb",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -45,7 +45,7 @@ export default function RootLayout({
       className={`${outfit.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-[#F8F9FB] text-[#1A1D1F] antialiased">
+      <body className="min-h-screen bg-background text-foreground antialiased transition-colors">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
           <Toaster richColors position="top-right" />

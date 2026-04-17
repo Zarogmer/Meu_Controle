@@ -40,12 +40,12 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  /* ── Brand Colors (Shoplytix Anti-Stress) ─────────────────── */
-  --color-brand-black: #1A1D1F;
-  --color-brand-purple: #C1B8FF;
-  --color-brand-green: #A6F7E2;
-  --color-brand-yellow: #FED97B;
-  --color-soft-gray: #9A9FA5;
+  --color-brand-navy: #0f172a;
+  --color-brand-blue: #2563eb;
+  --color-brand-blue-soft: #dbeafe;
+  --color-brand-green: #16a34a;
+  --color-brand-amber: #f59e0b;
+  --color-soft-gray: #64748b;
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -56,116 +56,159 @@
   --radius-4xl: 32px;
 }
 
-/* ── Light Theme (Default) — Anti-Stress Palette ──────────────── */
 :root {
-  --background: #F8F9FB;
-  --foreground: #1A1D1F;
-  --card: #FFFFFF;
-  --card-foreground: #1A1D1F;
-  --popover: #FFFFFF;
-  --popover-foreground: #1A1D1F;
-  --primary: #1A1D1F;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F0F1F3;
-  --secondary-foreground: #1A1D1F;
-  --muted: #F0F1F3;
-  --muted-foreground: #9A9FA5;
-  --accent: #F5F3FF;
-  --accent-foreground: #1A1D1F;
-  --destructive: #EF4444;
-  --border: #EFEFEF;
-  --input: #EFEFEF;
-  --ring: #C1B8FF;
-  --chart-1: #C1B8FF;
-  --chart-2: #A6F7E2;
-  --chart-3: #FED97B;
-  --chart-4: #A78BFA;
-  --chart-5: #FB923C;
+  --background: #f4f7fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eef6;
+  --secondary-foreground: #0f172a;
+  --muted: #eef3f9;
+  --muted-foreground: #64748b;
+  --accent: #dbeafe;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #dde5ef;
+  --input: #dde5ef;
+  --ring: #2563eb;
+  --chart-1: #2563eb;
+  --chart-2: #16a34a;
+  --chart-3: #f59e0b;
+  --chart-4: #0f172a;
+  --chart-5: #38bdf8;
   --radius: 1rem;
 
-  /* Sidebar — always dark */
-  --sidebar: #1A1D1F;
-  --sidebar-foreground: #9A9FA5;
-  --sidebar-primary: #C1B8FF;
-  --sidebar-primary-foreground: #1A1D1F;
-  --sidebar-accent: #272B30;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #272B30;
-  --sidebar-ring: #C1B8FF;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #64748b;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef3f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #dde5ef;
+  --sidebar-ring: #2563eb;
 }
 
-/* ── Dark Theme ───────────────────────────────────────────────── */
 .dark {
-  --background: #111315;
-  --foreground: #F8F9FB;
-  --card: #1A1D1F;
-  --card-foreground: #F8F9FB;
-  --popover: #1A1D1F;
-  --popover-foreground: #F8F9FB;
-  --primary: #C1B8FF;
-  --primary-foreground: #1A1D1F;
-  --secondary: #272B30;
-  --secondary-foreground: #F8F9FB;
-  --muted: #272B30;
-  --muted-foreground: #9A9FA5;
-  --accent: #272B30;
-  --accent-foreground: #F8F9FB;
-  --destructive: #EF4444;
-  --border: #272B30;
-  --input: #272B30;
-  --ring: #C1B8FF;
-  --chart-1: #C1B8FF;
-  --chart-2: #A6F7E2;
-  --chart-3: #FED97B;
-  --chart-4: #A78BFA;
-  --chart-5: #FB923C;
+  --background: #08111f;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #60a5fa;
+  --primary-foreground: #08111f;
+  --secondary: #172338;
+  --secondary-foreground: #f8fafc;
+  --muted: #172338;
+  --muted-foreground: #94a3b8;
+  --accent: #172338;
+  --accent-foreground: #f8fafc;
+  --destructive: #f87171;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #60a5fa;
+  --chart-1: #60a5fa;
+  --chart-2: #4ade80;
+  --chart-3: #fbbf24;
+  --chart-4: #cbd5e1;
+  --chart-5: #38bdf8;
 
-  --sidebar: #111315;
-  --sidebar-foreground: #9A9FA5;
-  --sidebar-primary: #C1B8FF;
-  --sidebar-primary-foreground: #1A1D1F;
-  --sidebar-accent: #1A1D1F;
-  --sidebar-accent-foreground: #F8F9FB;
-  --sidebar-border: #1A1D1F;
-  --sidebar-ring: #C1B8FF;
+  --sidebar: #0b1220;
+  --sidebar-foreground: #94a3b8;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #08111f;
+  --sidebar-accent: #172338;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #172338;
+  --sidebar-ring: #60a5fa;
+}
+
+.dark .bg-\[\#F8F9FB\] {
+  background-color: var(--background) !important;
+}
+
+.dark .bg-white {
+  background-color: var(--card) !important;
+}
+
+.dark .hover\:bg-gray-50\/50:hover,
+.dark .hover\:bg-red-50:hover,
+.dark .hover\:bg-amber-50:hover,
+.dark .hover\:bg-emerald-50:hover {
+  background-color: color-mix(in srgb, var(--card) 85%, white 15%) !important;
+}
+
+.dark .text-\[\#1A1D1F\],
+.dark .text-slate-900 {
+  color: var(--foreground) !important;
+}
+
+.dark .text-\[\#9A9FA5\],
+.dark .text-gray-400 {
+  color: var(--muted-foreground) !important;
+}
+
+.dark .border-\[\#EFEFEF\] {
+  border-color: var(--border) !important;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground antialiased;
-  }
+
   html {
     @apply font-sans;
   }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 }
 
-/* ── Card Styles ──────────────────────────────────────────────── */
 .content-card {
   background: var(--card);
   border-radius: 2rem;
-  box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.06);
 }
 
 .glass-card {
-  background: var(--card);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
   border-radius: 2rem;
-  box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.06);
 }
 
-/* ── Smooth Scrollbar ─────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 5px;
+.app-shell {
+  background:
+    radial-gradient(circle at top right, rgb(37 99 235 / 0.08), transparent 28%),
+    radial-gradient(circle at top left, rgb(14 165 233 / 0.08), transparent 24%),
+    var(--background);
 }
+
+.dark .app-shell {
+  background:
+    radial-gradient(circle at top right, rgb(96 165 250 / 0.12), transparent 26%),
+    radial-gradient(circle at top left, rgb(56 189 248 / 0.08), transparent 22%),
+    var(--background);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #94a3b8;
 }

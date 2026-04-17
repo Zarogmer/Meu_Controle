@@ -8,7 +8,7 @@ function getSecret(): string {
   if (!secret && process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET environment variable must be set in production');
   }
-  return secret || 'meu-estoque-secret-dev-key-change-in-production';
+  return secret || 'meu-controle-secret-dev-key-change-in-production';
 }
 
 const ACCESS_TOKEN_EXPIRY = '15m';

@@ -1,5 +1,5 @@
 {
-  "name": "meu-estoque",
+  "name": "meu-controle",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,8 @@
     "lint": "eslint",
     "db:push": "drizzle-kit push",
     "seed:tech": "node scripts/create-super-admin.js",
+    "db:reset-platform": "node scripts/reset-platform.js",
+    "email:rebrand": "node scripts/update-email-domain.js",
     "railway:setup": "npm run db:push && npm run seed:tech"
   },
   "dependencies": {

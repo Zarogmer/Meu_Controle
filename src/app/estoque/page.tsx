@@ -228,10 +228,13 @@ export default function EstoquePage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Estoque</h1>
-          <Button onClick={openNew} className="bg-[#1A1D1F] hover:bg-[#1A1D1F]/90 text-white">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Controle de produtos</p>
+            <h1 className="text-2xl font-bold">Catálogo e operação de produtos</h1>
+          </div>
+          <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Plus className="mr-2 size-4" />
-            Novo Produto
+            Cadastrar produto
           </Button>
         </div>
 
@@ -301,7 +304,7 @@ export default function EstoquePage() {
                       className="inline-flex items-center font-medium hover:text-foreground transition-colors"
                       onClick={() => toggleSort('precoCusto')}
                     >
-                      Preco de Custo
+                      Preço de custo
                       <SortIcon col="precoCusto" />
                     </button>
                   </TableHead>
@@ -311,12 +314,12 @@ export default function EstoquePage() {
                       className="inline-flex items-center font-medium hover:text-foreground transition-colors"
                       onClick={() => toggleSort('precoVenda')}
                     >
-                      Preco de Venda
+                      Preço de venda
                       <SortIcon col="precoVenda" />
                     </button>
                   </TableHead>
                   <TableHead>Lucro Unit.</TableHead>
-                  <TableHead className="text-right">Acoes</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -337,14 +340,14 @@ export default function EstoquePage() {
                           <div className="flex flex-col items-center justify-center gap-3 py-8">
                             <Boxes className="size-12 text-muted-foreground/30" />
                             <p className="text-muted-foreground text-sm">
-                              Nenhum produto cadastrado
+                              Nenhum produto cadastrado ainda
                             </p>
                             <Button
                               onClick={openNew}
-                              className="mt-2 bg-[#1A1D1F] hover:bg-[#1A1D1F]/90 text-white"
+                              className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
                             >
                               <Plus className="mr-2 size-4" />
-                              Novo Produto
+                              Cadastrar produto
                             </Button>
                           </div>
                         </TableCell>
@@ -412,7 +415,7 @@ export default function EstoquePage() {
                                   size="icon-sm"
                                   onClick={() => openVenda(p)}
                                   title="Registrar Venda"
-                                  className="text-[#C1B8FF] hover:text-[#1A1D1F] hover:bg-[#C1B8FF]/10"
+                                  className="text-primary hover:bg-primary/10 hover:text-primary"
                                 >
                                   <ShoppingBag className="size-3.5" />
                                 </Button>
@@ -442,7 +445,7 @@ export default function EstoquePage() {
                 Anterior
               </Button>
               <span className="text-muted-foreground">
-                Pagina {page} de {totalPages}
+                Página {page} de {totalPages}
               </span>
               <Button
                 variant="outline"
@@ -450,7 +453,7 @@ export default function EstoquePage() {
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >
-                Proxima
+                Próxima
               </Button>
             </div>
           </div>

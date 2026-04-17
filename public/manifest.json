@@ -1,7 +1,7 @@
 {
-  "name": "Meu Estoque",
-  "short_name": "MeuEstoque",
-  "description": "Sistema de controle de estoque para lojas",
+  "name": "Meu Controle",
+  "short_name": "MeuControle",
+  "description": "Painel interno de gestao, operacao e acompanhamento do negocio.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#0a1628",
@@ -30,7 +30,7 @@
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Estoque",
+      "name": "Controle de Produtos",
       "url": "/estoque",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }

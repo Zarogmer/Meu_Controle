@@ -22,7 +22,7 @@ dotenv.config({ path: '.env.local', override: false });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const TECH_ADMIN_NAME = process.env.TECH_ADMIN_NAME || 'Guilherme';
-const TECH_ADMIN_EMAIL = process.env.TECH_ADMIN_EMAIL || 'guilherme@meuestoque.com';
+const TECH_ADMIN_EMAIL = process.env.TECH_ADMIN_EMAIL || 'guilherme@meucontrole.com';
 const TECH_ADMIN_PASSWORD = process.env.TECH_ADMIN_PASSWORD || 'admin123';
 
 if (!DATABASE_URL) {

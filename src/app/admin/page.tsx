@@ -186,7 +186,7 @@ export default function AdminDashboard() {
       setActionType(null);
       await Promise.all([fetchMetrics(), fetchLojas()]);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erro na operacao');
+      toast.error(err instanceof Error ? err.message : 'Erro na operação.');
     } finally {
       setActionLoading(false);
     }
@@ -199,11 +199,14 @@ export default function AdminDashboard() {
         <div>
           <div className="flex items-center justify-between">
             <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                Painel da plataforma
+              </p>
               <h1 className="text-3xl font-bold tracking-tight text-[#1A1D1F]">
-                Ecossistema MeuEstoque
+                Meu Controle
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Gestao global de parceiros e infraestrutura
+                Gestão global de lojas, usuários e operação multi-tenant
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -236,14 +239,14 @@ export default function AdminDashboard() {
           />
           <MetricCard
             icon={<Users className="size-5" />}
-            label="Total de Usuarios"
+            label="Total de usuários"
             value={metrics?.totalUsuarios ?? 0}
             sub={`${metrics?.usuariosAtivos ?? 0} ativos`}
             color="bg-[#C1B8FF]/10 text-[#C1B8FF]"
           />
           <MetricCard
             icon={<TrendingUp className="size-5" />}
-            label="Admins / Funcionarios"
+            label="Admins / Funcionários"
             value={`${metrics?.totalAdmins ?? 0} / ${metrics?.totalEmployees ?? 0}`}
             color="bg-[#FED97B]/20 text-amber-600"
           />
@@ -401,10 +404,10 @@ export default function AdminDashboard() {
             </DialogTitle>
             <DialogDescription>
               {actionType === 'delete' && (
-                <>Tem certeza que deseja excluir permanentemente a loja <strong>{actionLoja?.nome}</strong>? Todos os dados e usuarios serao removidos. Esta acao nao pode ser desfeita.</>
+                <>Tem certeza que deseja excluir permanentemente a loja <strong>{actionLoja?.nome}</strong>? Todos os dados e usuários serão removidos. Esta ação não pode ser desfeita.</>
               )}
               {actionType === 'suspend' && (
-                <>Deseja suspender a loja <strong>{actionLoja?.nome}</strong>? Os usuarios nao conseguirao fazer login enquanto a loja estiver suspensa.</>
+                <>Deseja suspender a loja <strong>{actionLoja?.nome}</strong>? Os usuários não conseguirão fazer login enquanto a loja estiver suspensa.</>
               )}
               {actionType === 'activate' && (
                 <>Deseja reativar a loja <strong>{actionLoja?.nome}</strong>? Os usuarios poderao fazer login novamente.</>

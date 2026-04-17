@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { ShieldCheck, BriefcaseBusiness, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Boxes } from 'lucide-react';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -17,6 +17,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+
     try {
       await login(email, senha);
     } catch (err) {
@@ -27,53 +28,98 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-full bg-[#1A1D1F] text-white">
-          <Boxes className="size-7" />
-        </div>
+    <div className="app-shell min-h-screen px-4 py-10 text-foreground">
+      <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="hidden lg:block">
+          <div className="max-w-xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+              <ShieldCheck className="size-4" />
+              Painel interno para operacao e gestao
+            </div>
+            <h1 className="text-5xl font-bold tracking-tight text-foreground">
+              Meu Controle
+            </h1>
+            <p className="mt-4 text-xl text-muted-foreground">
+              Seu negocio na sua mao.
+            </p>
+            <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground">
+              Acompanhe caixa, produtos, rotina da equipe e indicadores do negocio em um unico painel claro, moderno e feito para operacao real.
+            </p>
 
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1D1F]">Meu Estoque</h1>
-          <p className="mt-1 text-sm text-[#9A9FA5]">
-            Entre na sua conta para continuar
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              <FeatureCard title="Controle diario" description="Organize produtos, contas e movimentacoes do negocio." />
+              <FeatureCard title="Visao clara" description="Tenha leitura rapida do que exige atencao agora." />
+              <FeatureCard title="Base escalavel" description="Prepare sua operacao para crescer com mais ordem." />
+            </div>
           </div>
+        </section>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="senha">Senha</Label>
-            <Input
-              id="senha"
-              type="password"
-              placeholder="Sua senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-            />
+        <section className="w-full">
+          <div className="mx-auto w-full max-w-md rounded-[2rem] border border-border/80 bg-card/95 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.14)] backdrop-blur">
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex size-14 items-center justify-center rounded-[1.5rem] bg-primary text-primary-foreground shadow-[0_14px_30px_rgba(37,99,235,0.28)]">
+                <BriefcaseBusiness className="size-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Meu Controle</h1>
+                <p className="text-sm text-muted-foreground">Entre na sua conta para continuar</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="voce@empresa.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-12 rounded-xl bg-background"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="senha">Senha</Label>
+                <Input
+                  id="senha"
+                  type="password"
+                  placeholder="Sua senha"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  required
+                  className="h-12 rounded-xl bg-background"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="h-12 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={loading}
+              >
+                {loading ? 'Entrando...' : 'Acessar painel'}
+                {!loading && <ArrowRight className="ml-2 size-4" />}
+              </Button>
+            </form>
+
+            <div className="mt-6 rounded-2xl bg-accent px-4 py-3">
+              <p className="text-sm text-muted-foreground">
+                Plataforma interna para acompanhar operacao, caixa, produtos e desempenho do negocio.
+              </p>
+            </div>
           </div>
-
-          <Button type="submit" className="w-full bg-[#1A1D1F] text-white hover:bg-[#1A1D1F]/90 rounded-full" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-[#9A9FA5]">
-          O acesso e liberado pelo administrador da plataforma.
-        </p>
+        </section>
       </div>
+    </div>
+  );
+}
+
+function FeatureCard({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-[1.5rem] border border-border/70 bg-card/80 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }

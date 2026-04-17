@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db, usuarios } from '@/lib/db';
 
 const DEFAULT_TECH_NAME = process.env.TECH_ADMIN_NAME || 'Guilherme';
-const DEFAULT_TECH_EMAIL = process.env.TECH_ADMIN_EMAIL || 'guilherme@meuestoque.com';
+const DEFAULT_TECH_EMAIL = process.env.TECH_ADMIN_EMAIL || 'guilherme@meucontrole.com';
 const DEFAULT_TECH_PASSWORD = process.env.TECH_ADMIN_PASSWORD || 'admin123';
 
 /**

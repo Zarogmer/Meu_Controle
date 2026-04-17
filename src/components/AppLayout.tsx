@@ -15,18 +15,18 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, ChevronDown, Shield } from 'lucide-react';
+import { LogOut, Settings, User, ChevronDown, Shield, Building2, BriefcaseBusiness } from 'lucide-react';
 
 const ROLE_LABELS: Record<string, string> = {
-  super_admin: 'Super Admin',
+  super_admin: 'Conta Tech',
   owner: 'Dono da Loja',
-  employee: 'Funcionario',
+  employee: 'Equipe',
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  super_admin: 'bg-[#C1B8FF]/10 text-[#C1B8FF]',
-  owner: 'bg-[#FED97B]/20 text-amber-700',
-  employee: 'bg-emerald-50 text-emerald-600',
+  super_admin: 'bg-primary/10 text-primary',
+  owner: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  employee: 'bg-amber-500/10 text-amber-600 dark:text-amber-300',
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +35,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      // Use window.location as fallback if router fails
       try {
         router.replace('/login');
       } catch {
@@ -46,28 +45,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8F9FB]">
-        <div className="hidden md:flex md:w-20 md:fixed md:left-8 md:top-8 md:bottom-8 flex-col items-center bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-8">
-          <Skeleton className="h-12 w-12 rounded-full bg-gray-100 mb-10" />
+      <div className="app-shell min-h-screen text-foreground transition-colors">
+        <div className="hidden md:fixed md:bottom-8 md:left-8 md:top-8 md:flex md:w-24 md:flex-col md:items-center rounded-[2rem] border border-border bg-card py-8 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+          <Skeleton className="mb-10 h-14 w-14 rounded-[1.5rem] bg-muted" />
           <div className="flex flex-col items-center gap-3">
-            <Skeleton className="h-12 w-12 rounded-full bg-gray-100" />
-            <Skeleton className="h-12 w-12 rounded-full bg-gray-100" />
-            <Skeleton className="h-12 w-12 rounded-full bg-gray-100" />
-            <Skeleton className="h-12 w-12 rounded-full bg-gray-100" />
+            <Skeleton className="h-12 w-12 rounded-2xl bg-muted" />
+            <Skeleton className="h-12 w-12 rounded-2xl bg-muted" />
+            <Skeleton className="h-12 w-12 rounded-2xl bg-muted" />
+            <Skeleton className="h-12 w-12 rounded-2xl bg-muted" />
           </div>
         </div>
-        <div className="flex-1 flex flex-col md:pl-[136px]">
-          <div className="flex h-16 items-center gap-4 bg-[#F8F9FB] px-6 md:px-8">
-            <Skeleton className="h-5 w-40 bg-muted" />
+        <div className="flex flex-1 flex-col md:pl-[152px]">
+          <div className="flex h-20 items-center gap-4 px-6 md:px-8">
+            <Skeleton className="h-10 w-56 rounded-2xl bg-muted" />
           </div>
-          <div className="flex-1 p-6 md:px-8 bg-[#F8F9FB]">
+          <div className="flex-1 p-6 md:px-8">
             <div className="flex flex-col gap-4">
-              <Skeleton className="h-8 w-48 bg-muted" />
+              <Skeleton className="h-8 w-48 rounded-xl bg-muted" />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Skeleton className="h-28 rounded-[2rem] bg-muted" />
-                <Skeleton className="h-28 rounded-[2rem] bg-muted" />
-                <Skeleton className="h-28 rounded-[2rem] bg-muted" />
-                <Skeleton className="h-28 rounded-[2rem] bg-muted" />
+                <Skeleton className="h-32 rounded-[2rem] bg-muted" />
+                <Skeleton className="h-32 rounded-[2rem] bg-muted" />
+                <Skeleton className="h-32 rounded-[2rem] bg-muted" />
+                <Skeleton className="h-32 rounded-[2rem] bg-muted" />
               </div>
               <Skeleton className="h-80 rounded-[2rem] bg-muted" />
             </div>
@@ -82,39 +81,59 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB]">
+    <div className="app-shell min-h-screen text-foreground transition-colors">
       <Sidebar />
-      <div className="flex flex-1 flex-col md:pl-[136px] transition-all duration-300">
-        <header className="flex h-16 items-center gap-4 bg-[#F8F9FB] px-6 md:px-8">
+      <div className="flex flex-1 flex-col md:pl-[152px] transition-all duration-300">
+        <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-border/80 bg-background/80 px-6 backdrop-blur-xl md:px-8">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Meu Controle
+            </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold text-foreground">
+                {user.nomeLoja || 'Painel da Plataforma'}
+              </h1>
+              <span className="hidden text-sm text-muted-foreground md:inline">
+                Seu negócio na sua mão.
+              </span>
+            </div>
+          </div>
+
           <div className="flex-1" />
 
-          {/* Role badge */}
-          <span className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${ROLE_COLORS[user.role] || 'bg-muted text-muted-foreground'}`}>
-            {user.role === 'super_admin' && <Shield className="size-3" />}
+          <span className={`hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium sm:inline-flex ${ROLE_COLORS[user.role] || 'bg-muted text-muted-foreground'}`}>
+            {user.role === 'super_admin' ? <Shield className="size-3.5" /> : <Building2 className="size-3.5" />}
             {ROLE_LABELS[user.role] || user.role}
           </span>
 
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-muted/50 focus:outline-none cursor-pointer" />
+                <button className="flex items-center gap-3 rounded-2xl border border-border/80 bg-card/90 px-2.5 py-2 transition-colors hover:bg-card focus:outline-none cursor-pointer" />
               }
             >
-              <div className="flex size-10 items-center justify-center rounded-full bg-[#C1B8FF]/20 text-sm font-bold text-[#1A1D1F]">
+              <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-sm font-bold text-primary">
                 {user.nome?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-[#1A1D1F]">{user.nome}</p>
-                <p className="text-xs text-[#9A9FA5]">{user.nomeLoja || 'Plataforma'}</p>
+              <div className="hidden min-w-0 text-left sm:block">
+                <p className="truncate text-sm font-medium text-foreground">{user.nome}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </p>
               </div>
-              <ChevronDown className="hidden sm:block size-4 text-[#9A9FA5]" />
+              <ChevronDown className="hidden size-4 text-muted-foreground sm:block" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="bottom" sideOffset={8} className="w-56">
+            <DropdownMenuContent align="end" side="bottom" sideOffset={8} className="w-64">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm font-medium text-[#1A1D1F]">{user.nome}</p>
-                    <p className="text-xs text-[#9A9FA5]">{user.email}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <BriefcaseBusiness className="size-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{user.nome}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user.nomeLoja || 'Meu Controle'}</p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
@@ -122,12 +141,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuGroup>
                 <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/perfil')}>
                   <User className="size-4" />
-                  Meu Perfil
+                  Meu perfil
                 </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/configuracoes')}>
                     <Settings className="size-4" />
-                    Configuracoes
+                    Configurações
                   </DropdownMenuItem>
                 )}
               </DropdownMenuGroup>
@@ -141,7 +160,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 overflow-y-auto bg-[#F8F9FB] p-6 md:px-8 pb-28 md:pb-0">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 pb-28 md:px-8 md:pb-8">{children}</main>
       </div>
       <MobileTabBar />
     </div>

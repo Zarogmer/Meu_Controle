@@ -23,16 +23,11 @@ import {
 import { toast } from 'sonner';
 import { CloudUpload, X } from 'lucide-react';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface Produto {
   id: number;
   nome: string;
   descricao: string | null;
   categoriaId: number | null;
-  categoriaNome: string | null;
   precoCusto: number;
   precoVenda: number;
   quantidade: number;
@@ -51,21 +46,15 @@ interface ProdutoFormProps {
   onSaved: () => void;
 }
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
 export default function ProdutoForm({ open, onClose, produto, onSaved }: ProdutoFormProps) {
-  const isEditing = !!produto;
+  const isEditing = Boolean(produto);
 
-  // Form state
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
-  const [newCategoriaName, setNewCategoriaName] = useState('');
   const [precoCusto, setPrecoCusto] = useState('');
   const [precoVenda, setPrecoVenda] = useState('');
   const [quantidade, setQuantidade] = useState('');
@@ -77,18 +66,20 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch categorias
   useEffect(() => {
     if (!open) return;
+
     fetch('/api/categorias')
-      .then((r) => r.json())
+      .then((response) => response.json())
       .then((data) => setCategorias(data.categorias ?? []))
-      .catch(() => {});
+      .catch(() => {
+        toast.error('Erro ao carregar as categorias.');
+      });
   }, [open]);
 
-  // Populate fields when editing
   useEffect(() => {
     if (!open) return;
+
     if (produto) {
       setNome(produto.nome);
       setDescricao(produto.descricao ?? '');
@@ -98,7 +89,6 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
       setQuantidade(String(produto.quantidade));
       setImagem(null);
       setImagemPreview(produto.imagemUrl);
-      setNewCategoriaName('');
     } else {
       resetForm();
     }
@@ -108,7 +98,6 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
     setNome('');
     setDescricao('');
     setCategoriaId('');
-    setNewCategoriaName('');
     setPrecoCusto('');
     setPrecoVenda('');
     setQuantidade('');
@@ -116,29 +105,31 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
     setImagemPreview(null);
   };
 
-  // Image handling
   const handleImageFile = useCallback((file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error('Tipo de imagem invalido. Use JPEG, PNG ou WebP.');
+      toast.error('Tipo de imagem inválido. Use JPEG, PNG ou WebP.');
       return;
     }
+
     if (file.size > MAX_IMAGE_SIZE) {
-      toast.error('Imagem deve ter no maximo 2MB.');
+      toast.error('A imagem deve ter no máximo 2 MB.');
       return;
     }
+
     setImagem(file);
     setImagemPreview(URL.createObjectURL(file));
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) handleImageFile(file);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files?.[0];
+
+    const file = event.dataTransfer.files?.[0];
     if (file) handleImageFile(file);
   };
 
@@ -148,162 +139,126 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
     if (!nome.trim()) {
-      toast.error('Nome e obrigatorio.');
+      toast.error('O nome do produto é obrigatório.');
       return;
     }
 
     setSubmitting(true);
-    try {
-      // If user typed a new category, create it first
-      let finalCategoriaId = categoriaId;
-      if (newCategoriaName.trim()) {
-        const catRes = await fetch('/api/categorias', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome: newCategoriaName.trim() }),
-        });
-        if (!catRes.ok) {
-          toast.error('Erro ao criar categoria');
-          setSubmitting(false);
-          return;
-        }
-        const catData = await catRes.json();
-        finalCategoriaId = String(catData.categoria.id);
-        // Refresh local list
-        setCategorias((prev) => [...prev, catData.categoria]);
-        setNewCategoriaName('');
-      }
 
+    try {
       const formData = new FormData();
       formData.append('nome', nome.trim());
       formData.append('descricao', descricao);
-      if (finalCategoriaId) formData.append('categoriaId', finalCategoriaId);
+      if (categoriaId) formData.append('categoriaId', categoriaId);
       formData.append('precoCusto', precoCusto || '0');
       formData.append('precoVenda', precoVenda || '0');
       formData.append('quantidade', quantidade || '0');
       if (imagem) formData.append('imagem', imagem);
 
-      const url = isEditing ? `/api/produtos/${produto.id}` : '/api/produtos';
+      const url = isEditing ? `/api/produtos/${produto?.id}` : '/api/produtos';
       const method = isEditing ? 'PUT' : 'POST';
 
-      const res = await fetch(url, { method, body: formData });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Erro ao salvar produto');
+      const response = await fetch(url, { method, body: formData });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Erro ao salvar o produto.');
       }
 
-      toast.success(isEditing ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
+      toast.success(isEditing ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.');
       onSaved();
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erro ao salvar produto');
+      toast.error(err instanceof Error ? err.message : 'Erro ao salvar o produto.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar Produto' : 'Novo Produto'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar produto' : 'Cadastrar produto'}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Altere os dados do produto abaixo.'
-              : 'Preencha os dados do novo produto.'}
+              ? 'Atualize as informações do produto abaixo.'
+              : 'Preencha os dados para adicionar um novo produto ao catálogo.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nome */}
           <div className="space-y-1.5">
             <Label htmlFor="pf-nome">Nome *</Label>
             <Input
               id="pf-nome"
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              onChange={(event) => setNome(event.target.value)}
               placeholder="Nome do produto"
               required
             />
           </div>
 
-          {/* Descricao */}
           <div className="space-y-1.5">
-            <Label htmlFor="pf-descricao">Descricao</Label>
+            <Label htmlFor="pf-descricao">Descrição</Label>
             <Textarea
               id="pf-descricao"
               value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Descricao do produto"
+              onChange={(event) => setDescricao(event.target.value)}
+              placeholder="Descreva o produto"
               rows={3}
             />
           </div>
 
-          {/* Categoria */}
           <div className="space-y-1.5">
             <Label>Categoria</Label>
-            <Select
-              value={categoriaId}
-              onValueChange={(val) => {
-                setCategoriaId(val ?? '');
-                if (val) setNewCategoriaName('');
-              }}
-            >
+            <Select value={categoriaId} onValueChange={(value) => setCategoriaId(value ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhuma</SelectItem>
-                {categorias.map((cat) => (
-                  <SelectItem key={cat.id} value={String(cat.id)}>
-                    {cat.nome}
+                {categorias.map((categoria) => (
+                  <SelectItem key={categoria.id} value={String(categoria.id)}>
+                    {categoria.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              placeholder="Ou digite o nome de uma nova categoria"
-              value={newCategoriaName}
-              onChange={(e) => {
-                setNewCategoriaName(e.target.value);
-                if (e.target.value) setCategoriaId('');
-              }}
-            />
+            <p className="text-xs text-muted-foreground">
+              As categorias são padronizadas pela plataforma para manter o catálogo organizado.
+            </p>
           </div>
 
-          {/* Precos */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="pf-custo">Preco de Custo (R$)</Label>
+              <Label htmlFor="pf-custo">Preço de custo (R$)</Label>
               <Input
                 id="pf-custo"
                 type="number"
                 step="0.01"
                 min="0"
                 value={precoCusto}
-                onChange={(e) => setPrecoCusto(e.target.value)}
+                onChange={(event) => setPrecoCusto(event.target.value)}
                 placeholder="0,00"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pf-venda">Preco de Venda (R$)</Label>
+              <Label htmlFor="pf-venda">Preço de venda (R$)</Label>
               <Input
                 id="pf-venda"
                 type="number"
                 step="0.01"
                 min="0"
                 value={precoVenda}
-                onChange={(e) => setPrecoVenda(e.target.value)}
+                onChange={(event) => setPrecoVenda(event.target.value)}
                 placeholder="0,00"
               />
             </div>
           </div>
 
-          {/* Quantidade */}
           <div className="space-y-1.5">
             <Label htmlFor="pf-qtd">Quantidade</Label>
             <Input
@@ -312,20 +267,19 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
               min="0"
               step="1"
               value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
+              onChange={(event) => setQuantidade(event.target.value)}
               placeholder="0"
             />
           </div>
 
-          {/* Imagem */}
           <div className="space-y-1.5">
             <Label>Imagem</Label>
             <div
               className={`relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors ${
                 dragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
               }`}
-              onDragOver={(e) => {
-                e.preventDefault();
+              onDragOver={(event) => {
+                event.preventDefault();
                 setDragging(true);
               }}
               onDragLeave={() => setDragging(false)}
@@ -336,14 +290,14 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
                 <div className="relative">
                   <img
                     src={imagemPreview}
-                    alt="Preview"
+                    alt="Pré-visualização"
                     className="max-h-32 rounded object-contain"
                   />
                   <button
                     type="button"
                     className="absolute -right-2 -top-2 rounded-full bg-destructive p-0.5 text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={(event) => {
+                      event.stopPropagation();
                       removeImage();
                     }}
                   >
@@ -357,7 +311,7 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
                     Arraste uma imagem ou clique para selecionar
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    JPG, PNG ou WebP (max 2MB)
+                    JPG, PNG ou WebP com até 2 MB
                   </p>
                 </>
               )}
@@ -376,7 +330,7 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
               Cancelar
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Salvando...' : isEditing ? 'Salvar' : 'Criar Produto'}
+              {submitting ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar produto'}
             </Button>
           </DialogFooter>
         </form>

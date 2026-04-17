@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meu-estoque-v1';
+const CACHE_NAME = 'meu-controle-v1';
 const STATIC_ASSETS = [
   '/login',
   '/dashboard',
