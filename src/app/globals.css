@@ -1,0 +1,171 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-outfit);
+  --font-mono: monospace;
+  --font-heading: var(--font-outfit);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* ── Brand Colors (Shoplytix Anti-Stress) ─────────────────── */
+  --color-brand-black: #1A1D1F;
+  --color-brand-purple: #C1B8FF;
+  --color-brand-green: #A6F7E2;
+  --color-brand-yellow: #FED97B;
+  --color-soft-gray: #9A9FA5;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+}
+
+/* ── Light Theme (Default) — Anti-Stress Palette ──────────────── */
+:root {
+  --background: #F8F9FB;
+  --foreground: #1A1D1F;
+  --card: #FFFFFF;
+  --card-foreground: #1A1D1F;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1D1F;
+  --primary: #1A1D1F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0F1F3;
+  --secondary-foreground: #1A1D1F;
+  --muted: #F0F1F3;
+  --muted-foreground: #9A9FA5;
+  --accent: #F5F3FF;
+  --accent-foreground: #1A1D1F;
+  --destructive: #EF4444;
+  --border: #EFEFEF;
+  --input: #EFEFEF;
+  --ring: #C1B8FF;
+  --chart-1: #C1B8FF;
+  --chart-2: #A6F7E2;
+  --chart-3: #FED97B;
+  --chart-4: #A78BFA;
+  --chart-5: #FB923C;
+  --radius: 1rem;
+
+  /* Sidebar — always dark */
+  --sidebar: #1A1D1F;
+  --sidebar-foreground: #9A9FA5;
+  --sidebar-primary: #C1B8FF;
+  --sidebar-primary-foreground: #1A1D1F;
+  --sidebar-accent: #272B30;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #272B30;
+  --sidebar-ring: #C1B8FF;
+}
+
+/* ── Dark Theme ───────────────────────────────────────────────── */
+.dark {
+  --background: #111315;
+  --foreground: #F8F9FB;
+  --card: #1A1D1F;
+  --card-foreground: #F8F9FB;
+  --popover: #1A1D1F;
+  --popover-foreground: #F8F9FB;
+  --primary: #C1B8FF;
+  --primary-foreground: #1A1D1F;
+  --secondary: #272B30;
+  --secondary-foreground: #F8F9FB;
+  --muted: #272B30;
+  --muted-foreground: #9A9FA5;
+  --accent: #272B30;
+  --accent-foreground: #F8F9FB;
+  --destructive: #EF4444;
+  --border: #272B30;
+  --input: #272B30;
+  --ring: #C1B8FF;
+  --chart-1: #C1B8FF;
+  --chart-2: #A6F7E2;
+  --chart-3: #FED97B;
+  --chart-4: #A78BFA;
+  --chart-5: #FB923C;
+
+  --sidebar: #111315;
+  --sidebar-foreground: #9A9FA5;
+  --sidebar-primary: #C1B8FF;
+  --sidebar-primary-foreground: #1A1D1F;
+  --sidebar-accent: #1A1D1F;
+  --sidebar-accent-foreground: #F8F9FB;
+  --sidebar-border: #1A1D1F;
+  --sidebar-ring: #C1B8FF;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ── Card Styles ──────────────────────────────────────────────── */
+.content-card {
+  background: var(--card);
+  border-radius: 2rem;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+}
+
+.glass-card {
+  background: var(--card);
+  border-radius: 2rem;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+}
+
+/* ── Smooth Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
