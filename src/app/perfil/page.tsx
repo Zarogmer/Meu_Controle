@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { AtSign, Instagram, Mail, Phone, Save, User as UserIcon } from 'lucide-react';
+import { AtSign, Mail, Phone, Save, User as UserIcon } from 'lucide-react';
 
 // Pretty-prints digits as "(11) 91234-5678" / "(11) 1234-5678".
 // Pure presentation — the API receives the raw string and normalizes to digits only.
@@ -177,7 +177,7 @@ export default function PerfilPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="perfil-instagram" className="flex items-center gap-1.5">
-                    <Instagram className="size-3.5 text-muted-foreground" />
+                    <AtSign className="size-3.5 text-muted-foreground" />
                     Instagram
                   </Label>
                   <div className="relative">
