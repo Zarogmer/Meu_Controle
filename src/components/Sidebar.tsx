@@ -275,20 +275,13 @@ export function Sidebar() {
   return (
     <TooltipProvider delay={0}>
       <aside className="hidden md:fixed md:bottom-8 md:left-8 md:top-8 md:z-50 md:flex md:w-24 md:flex-col md:items-center rounded-[2rem] border border-sidebar-border bg-sidebar py-7 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-colors">
-        <div className="mb-10 flex flex-col items-center gap-3">
-          <Link
-            href={homeHref}
-            className="flex h-14 w-14 items-center justify-center rounded-[1.5rem] bg-primary text-primary-foreground shadow-[0_14px_30px_rgba(37,99,235,0.3)] transition-transform hover:scale-105"
-          >
-            <BriefcaseBusiness className="size-6" />
-          </Link>
-          <div className="text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Meu
-            </p>
-            <p className="text-sm font-bold text-foreground">Controle</p>
-          </div>
-        </div>
+        <Link
+          href={homeHref}
+          aria-label="Meu Controle - Início"
+          className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all hover:bg-primary hover:text-primary-foreground hover:scale-105"
+        >
+          <BriefcaseBusiness className="size-5" />
+        </Link>
 
         <div className="flex-1">
           <DesktopNavLinks />
