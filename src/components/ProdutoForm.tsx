@@ -217,12 +217,16 @@ export default function ProdutoForm({ open, onClose, produto, onSaved }: Produto
             <Label>Categoria</Label>
             <Select value={categoriaId} onValueChange={(value) => setCategoriaId(value ?? '')}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione uma categoria">
-                  {(value) => {
-                    const selected = categorias.find((c) => String(c.id) === value);
-                    return selected ? selected.nome : null;
-                  }}
-                </SelectValue>
+                <span className="flex-1 text-left">
+                  {(() => {
+                    const selected = categorias.find((c) => String(c.id) === categoriaId);
+                    return selected ? (
+                      selected.nome
+                    ) : (
+                      <span className="text-muted-foreground">Selecione uma categoria</span>
+                    );
+                  })()}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {categorias.map((categoria) => (
