@@ -257,7 +257,13 @@ export default function EstoquePage() {
             }}
           >
             <SelectTrigger className="w-[220px] rounded-xl">
-              <SelectValue placeholder="Todas as categorias" />
+              <SelectValue placeholder="Todas as categorias">
+                {(value) => {
+                  if (!value) return 'Todas as categorias';
+                  const selected = categorias.find((c) => String(c.id) === value);
+                  return selected ? selected.nome : null;
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Todas as categorias</SelectItem>
