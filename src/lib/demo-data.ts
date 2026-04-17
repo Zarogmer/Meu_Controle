@@ -68,22 +68,25 @@ export const demoTopProdutos = {
 
 export const demoUltimasVendas = {
   vendas: [
-    { id: 1, produtoNome: 'Camiseta Polo Preta', quantidade: 2, total: 17980, data: '31/03' },
-    { id: 2, produtoNome: 'Tenis Nike Air', quantidade: 1, total: 45990, data: '31/03' },
-    { id: 3, produtoNome: 'Calca Jeans Slim', quantidade: 3, total: 47970, data: '30/03' },
-    { id: 4, produtoNome: 'Bone Adidas', quantidade: 5, total: 39950, data: '30/03' },
-    { id: 5, produtoNome: 'Bermuda Sarja', quantidade: 1, total: 12990, data: '29/03' },
+    { id: 1, produtoNome: 'Camiseta Polo Preta', quantidade: 2, total: 17980, dataVenda: '2026-03-31' },
+    { id: 2, produtoNome: 'Tenis Nike Air', quantidade: 1, total: 45990, dataVenda: '2026-03-31' },
+    { id: 3, produtoNome: 'Calca Jeans Slim', quantidade: 3, total: 47970, dataVenda: '2026-03-30' },
+    { id: 4, produtoNome: 'Bone Adidas', quantidade: 5, total: 39950, dataVenda: '2026-03-30' },
+    { id: 5, produtoNome: 'Bermuda Sarja', quantidade: 1, total: 12990, dataVenda: '2026-03-29' },
   ],
 };
 
 export const demoDividasResumo = {
-  totalDividas: 4580000,
-  totalVencidas: 1250000,
-  qtdVencidas: 3,
-  devedores: [
-    { id: 1, nome: 'Carlos Silva', valor: 35000, dataVencimento: '28/03', status: 'vencida' },
-    { id: 2, nome: 'Maria Santos', valor: 89000, dataVencimento: '31/03', status: 'pendente' },
-    { id: 3, nome: 'Joao Lima', valor: 150000, dataVencimento: '02/04', status: 'pendente' },
+  totalAReceber: 4580000,
+  totalDevedores: 3,
+  dividasVencidas: 1,
+  valorVencido: 35000,
+  dividasHoje: 1,
+  dividasProximos7Dias: 2,
+  devedoresRecentes: [
+    { nome: 'Carlos Silva', valor: 35000, vencimento: '2026-03-28', status: 'vencida' },
+    { nome: 'Maria Santos', valor: 89000, vencimento: '2026-03-31', status: 'pendente' },
+    { nome: 'Joao Lima', valor: 150000, vencimento: '2026-04-02', status: 'pendente' },
   ],
 };
 

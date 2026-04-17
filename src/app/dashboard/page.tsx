@@ -33,8 +33,21 @@ function fmtCompact(centavos: number): string {
   return fmt(centavos);
 }
 
-function fmtDate(d: string) {
-  const [, m, day] = d.split('-');
+function fmtDate(value: string | null | undefined) {
+  if (!value) return '--/--';
+
+  if (value.includes('/')) {
+    return value;
+  }
+
+  const isoDate = value.includes('T') ? value.split('T')[0] : value;
+  const parts = isoDate.split('-');
+
+  if (parts.length !== 3) {
+    return value;
+  }
+
+  const [, m, day] = parts;
   return `${day}/${m}`;
 }
 
