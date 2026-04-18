@@ -36,6 +36,7 @@ import {
   Search,
   ImageIcon,
   Boxes,
+  Share2,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -180,6 +181,49 @@ export default function EstoquePage() {
     } catch {
       toast.error('Erro ao excluir produto');
     }
+  };
+
+  // Share — mobile opens the native share sheet (WhatsApp, Instagram Stories,
+  // etc); desktop falls back to opening WhatsApp web with the text pre-filled.
+  const handleShare = async (produto: Produto) => {
+    const preco = formatCentavos(produto.precoVenda);
+    const text = `${produto.nome}\n${preco}${
+      produto.descricao ? `\n\n${produto.descricao}` : ''
+    }`;
+
+    let imageFile: File | undefined;
+    if (produto.imagemUrl) {
+      try {
+        const res = await fetch(produto.imagemUrl);
+        const blob = await res.blob();
+        const ext = blob.type.split('/')[1] || 'jpg';
+        imageFile = new File([blob], `${produto.nome}.${ext}`, { type: blob.type });
+      } catch {
+        // segue sem imagem se fetch falhar (CORS, offline, etc.)
+      }
+    }
+
+    const nav = navigator as Navigator & {
+      canShare?: (data: ShareData) => boolean;
+    };
+
+    if (typeof nav.share === 'function') {
+      const payload: ShareData = { title: produto.nome, text };
+      if (imageFile && nav.canShare?.({ files: [imageFile] })) {
+        payload.files = [imageFile];
+      }
+      try {
+        await nav.share(payload);
+        return;
+      } catch (err) {
+        // usuário cancelou — não mostra erro
+        if (err instanceof Error && err.name === 'AbortError') return;
+      }
+    }
+
+    // Fallback desktop: WhatsApp Web
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   // Open edit
@@ -415,6 +459,15 @@ export default function EstoquePage() {
                                   title="Excluir"
                                 >
                                   <Trash2 className="size-3.5 text-destructive" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  onClick={() => handleShare(p)}
+                                  title="Compartilhar"
+                                  className="text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-400"
+                                >
+                                  <Share2 className="size-3.5" />
                                 </Button>
                                 <Button
                                   variant="ghost"
