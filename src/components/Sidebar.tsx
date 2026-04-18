@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -16,7 +17,7 @@ import {
   Users,
   ClipboardList,
   Receipt,
-  BriefcaseBusiness,
+  TrendingDown,
   Building2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,6 +50,7 @@ const allNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, requiresTenant: true },
   { href: '/estoque', label: 'Controle de Produtos', icon: Boxes, requiresTenant: true },
   { href: '/lancamentos', label: 'Controle de Caixa', icon: Receipt, requiresTenant: true },
+  { href: '/gastos', label: 'Gastos', icon: TrendingDown, requiresTenant: true },
   { href: '/deficit', label: 'Contas a Receber', icon: Wallet, requiresTenant: true },
   { href: '/tarefas', label: 'Rotinas', icon: ClipboardList, requiresTenant: true },
   { href: '/equipe', label: 'Equipe', icon: Users, minRole: 'owner', requiresTenant: true },
@@ -278,9 +280,9 @@ export function Sidebar() {
         <Link
           href={homeHref}
           aria-label="Meu Controle - Início"
-          className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all hover:bg-primary hover:text-primary-foreground hover:scale-105"
+          className="mb-8 flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-[#0b1020] transition-all hover:scale-105 hover:shadow-[0_10px_30px_rgba(56,189,248,0.35)]"
         >
-          <BriefcaseBusiness className="size-5" />
+          <Image src="/mascote.png" alt="Meu Controle" width={48} height={48} className="size-12 object-cover" />
         </Link>
 
         <div className="flex-1">
@@ -307,8 +309,8 @@ export function MobileSidebar() {
       </SheetTrigger>
       <SheetContent side="left" className="w-72 border-border bg-card p-0">
         <SheetHeader className="flex h-20 flex-row items-center gap-3 border-b border-border px-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <BriefcaseBusiness className="size-5" />
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-[#0b1020]">
+            <Image src="/mascote.png" alt="Meu Controle" width={40} height={40} className="size-10 object-cover" />
           </div>
           <div className="text-left">
             <SheetTitle className="text-lg font-bold text-foreground">Meu Controle</SheetTitle>

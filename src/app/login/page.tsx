@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ShieldCheck, BriefcaseBusiness, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -71,8 +72,8 @@ export default function LoginPage() {
         <section className="w-full">
           <div className="mx-auto w-full max-w-md rounded-[2rem] border border-border/80 bg-card/95 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.14)] backdrop-blur">
             <div className="mb-6 flex items-center gap-4">
-              <div className="flex size-14 items-center justify-center rounded-[1.5rem] bg-primary text-primary-foreground shadow-[0_14px_30px_rgba(37,99,235,0.28)]">
-                <BriefcaseBusiness className="size-7" />
+              <div className="flex size-14 items-center justify-center overflow-hidden rounded-[1.5rem] bg-[#0b1020] shadow-[0_14px_30px_rgba(56,189,248,0.35)]">
+                <Image src="/mascote.png" alt="Meu Controle" width={56} height={56} className="size-14 object-cover" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">Meu Controle</h1>

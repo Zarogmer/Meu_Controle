@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
+import Image from 'next/image';
 import {
   ArrowDownRight,
   ArrowUpRight,
-  BriefcaseBusiness,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -333,8 +333,8 @@ export default function DashboardPage() {
         <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
           <div className="relative overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(135deg,rgba(37,99,235,0.14),rgba(14,165,233,0.06))] p-7">
             <div className="relative z-10 max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-card/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                <BriefcaseBusiness className="size-3.5" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-card/70 py-1 pl-1 pr-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                <Image src="/mascote.png" alt="" width={20} height={20} className="size-5 rounded-full object-cover" />
                 Visao geral
               </div>
               <p className="text-sm text-muted-foreground">{getGreeting()}, {user?.nome?.split(' ')[0] || 'gestor'}.</p>

@@ -15,7 +15,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, ChevronDown, Shield, Building2, BriefcaseBusiness } from 'lucide-react';
+import Image from 'next/image';
+import { LogOut, User, ChevronDown, Shield, Building2 } from 'lucide-react';
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Conta Tech',
@@ -127,8 +128,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <BriefcaseBusiness className="size-5" />
+                    <div className="flex size-10 items-center justify-center overflow-hidden rounded-2xl bg-[#0b1020]">
+                      <Image src="/mascote.png" alt="Meu Controle" width={40} height={40} className="size-10 object-cover" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">{user.nome}</p>
