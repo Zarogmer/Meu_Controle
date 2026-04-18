@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { MascotCube } from '@/components/MascotCube';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
@@ -280,9 +280,10 @@ export function Sidebar() {
         <Link
           href={homeHref}
           aria-label="Meu Controle - Início"
-          className="cosmic-glow mb-8 flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-[#0b1020] transition-all hover:scale-105 hover:shadow-[0_12px_34px_rgba(56,189,248,0.45)]"
+          className="cosmic-glow mb-8 flex h-12 w-12 items-center justify-center rounded-2xl transition-all hover:scale-105"
+          style={{ backgroundColor: 'var(--mascot-bg)' }}
         >
-          <Image src="/mascote.png" alt="Meu Controle" width={48} height={48} className="size-12 object-cover" />
+          <MascotCube size={36} />
         </Link>
 
         <div className="flex-1">
@@ -309,8 +310,11 @@ export function MobileSidebar() {
       </SheetTrigger>
       <SheetContent side="left" className="w-72 border-border bg-card p-0">
         <SheetHeader className="flex h-20 flex-row items-center gap-3 border-b border-border px-6">
-          <div className="cosmic-glow flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-[#0b1020]">
-            <Image src="/mascote.png" alt="Meu Controle" width={40} height={40} className="size-10 object-cover" />
+          <div
+            className="cosmic-glow flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: 'var(--mascot-bg)' }}
+          >
+            <MascotCube size={30} />
           </div>
           <div className="text-left">
             <SheetTitle className="text-lg font-bold text-foreground">Meu Controle</SheetTitle>
