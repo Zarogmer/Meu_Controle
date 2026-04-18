@@ -11,6 +11,7 @@
     "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
+    "db:migrate": "node scripts/migrate-all.js",
     "seed:tech": "node scripts/create-super-admin.js",
     "db:reset-platform": "node scripts/reset-platform.js",
     "email:rebrand": "node scripts/update-email-domain.js",

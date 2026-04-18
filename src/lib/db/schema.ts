@@ -160,6 +160,32 @@ export const lancamentos = pgTable('lancamentos', {
   index('idx_lancamentos_loja_data').on(t.lojaId, t.dataLancamento),
 ]);
 
+// ── Gastos ─────────────────────────────────────────────────────
+// Despesas da loja. `tipo` separa gasto empresarial de gasto pessoal
+// do usuário (dono). Gastos pessoais ficam amarrados ao usuarioId
+// para não vazarem para funcionários.
+export const tipoGastoEnum = pgEnum('tipo_gasto', ['pessoal', 'empresa']);
+export const statusGastoEnum = pgEnum('status_gasto', ['pago', 'pendente']);
+
+export const gastos = pgTable('gastos', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').references(() => usuarios.id, { onDelete: 'set null' }),
+  tipo: tipoGastoEnum('tipo').notNull().default('empresa'),
+  descricao: text('descricao').notNull(),
+  categoria: text('categoria'),
+  valor: integer('valor').notNull(),
+  dataGasto: text('data_gasto').notNull(),
+  status: statusGastoEnum('status').notNull().default('pago'),
+  observacao: text('observacao'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_gastos_loja').on(t.lojaId),
+  index('idx_gastos_loja_tipo').on(t.lojaId, t.tipo),
+  index('idx_gastos_loja_data').on(t.lojaId, t.dataGasto),
+]);
+
 // ── Relations ──────────────────────────────────────────────────
 export const lojasRelations = relations(lojas, ({ many }) => ({
   usuarios: many(usuarios),
@@ -169,6 +195,7 @@ export const lojasRelations = relations(lojas, ({ many }) => ({
   dividas: many(dividas),
   tarefas: many(tarefas),
   lancamentos: many(lancamentos),
+  gastos: many(gastos),
 }));
 
 export const usuariosRelations = relations(usuarios, ({ one }) => ({
@@ -201,4 +228,9 @@ export const tarefasRelations = relations(tarefas, ({ one }) => ({
 
 export const lancamentosRelations = relations(lancamentos, ({ one }) => ({
   loja: one(lojas, { fields: [lancamentos.lojaId], references: [lojas.id] }),
+}));
+
+export const gastosRelations = relations(gastos, ({ one }) => ({
+  loja: one(lojas, { fields: [gastos.lojaId], references: [lojas.id] }),
+  usuario: one(usuarios, { fields: [gastos.usuarioId], references: [usuarios.id] }),
 }));
