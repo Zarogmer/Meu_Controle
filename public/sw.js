@@ -1,9 +1,8 @@
-const CACHE_NAME = 'meu-controle-v1';
+const CACHE_NAME = 'meu-controle-v2';
 const STATIC_ASSETS = [
   '/login',
   '/dashboard',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/mascote.png',
   '/manifest.json',
 ];
 

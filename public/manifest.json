@@ -11,13 +11,13 @@
   "icons": [
     {
       "src": "/mascote.png",
-      "sizes": "512x512",
+      "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 256x256 384x384 512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/mascote.png",
-      "sizes": "512x512",
+      "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
@@ -27,12 +27,12 @@
     {
       "name": "Dashboard",
       "url": "/dashboard",
-      "icons": [{ "src": "/mascote.png", "sizes": "512x512" }]
+      "icons": [{ "src": "/mascote.png", "sizes": "192x192 512x512" }]
     },
     {
       "name": "Controle de Produtos",
       "url": "/estoque",
-      "icons": [{ "src": "/mascote.png", "sizes": "512x512" }]
+      "icons": [{ "src": "/mascote.png", "sizes": "192x192 512x512" }]
     }
   ]
 }
