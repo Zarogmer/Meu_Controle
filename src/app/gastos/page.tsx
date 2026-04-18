@@ -317,7 +317,7 @@ export default function GastosPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalEmpresa)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Gastos da empresa</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Gastos da empresa</p>
               </div>
             </CardContent>
           </Card>
@@ -328,7 +328,7 @@ export default function GastosPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalPessoal)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Gastos pessoais</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Gastos pessoais</p>
               </div>
             </CardContent>
           </Card>
@@ -339,7 +339,7 @@ export default function GastosPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalPendente)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Pendentes</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pendentes</p>
               </div>
             </CardContent>
           </Card>

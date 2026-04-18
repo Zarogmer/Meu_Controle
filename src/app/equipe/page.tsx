@@ -188,7 +188,7 @@ export default function EquipePage() {
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-[#1A1D1F]">{usuarios.length}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Total de usuarios</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total de usuarios</p>
                 </div>
               </div>
             </CardContent>
@@ -203,7 +203,7 @@ export default function EquipePage() {
                   <p className="text-3xl font-bold text-[#1A1D1F]">
                     {usuarios.filter(u => u.role === 'owner').length}
                   </p>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Administradores</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Administradores</p>
                 </div>
               </div>
             </CardContent>
@@ -218,7 +218,7 @@ export default function EquipePage() {
                   <p className="text-3xl font-bold text-[#1A1D1F]">
                     {usuarios.filter(u => u.role === 'employee').length}
                   </p>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Funcionarios</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Funcionarios</p>
                 </div>
               </div>
             </CardContent>

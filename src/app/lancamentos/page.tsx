@@ -300,7 +300,7 @@ export default function LancamentosPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalPago)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Total Pago</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Pago</p>
               </div>
             </CardContent>
           </Card>
@@ -311,7 +311,7 @@ export default function LancamentosPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalAguardando)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Aguardando</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Aguardando</p>
               </div>
             </CardContent>
           </Card>
@@ -322,7 +322,7 @@ export default function LancamentosPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalEmProcesso)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Em Processo</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Em Processo</p>
               </div>
             </CardContent>
           </Card>

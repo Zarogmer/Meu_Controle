@@ -280,7 +280,7 @@ export default function DeficitPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{formatCentavos(totalPendente)}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Total a receber</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total a receber</p>
               </div>
             </CardContent>
           </Card>
@@ -292,7 +292,7 @@ export default function DeficitPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{totalDevedores}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Devedores ativos</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Devedores ativos</p>
               </div>
             </CardContent>
           </Card>
@@ -304,7 +304,7 @@ export default function DeficitPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{totalVencidas}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Vencidas</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vencidas</p>
               </div>
             </CardContent>
           </Card>

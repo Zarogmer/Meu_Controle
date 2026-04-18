@@ -268,7 +268,7 @@ export default function TarefasPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{pendentes.length}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Pendentes</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pendentes</p>
               </div>
             </CardContent>
           </Card>
@@ -279,7 +279,7 @@ export default function TarefasPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{altaPrioridade}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Alta Prioridade</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Alta Prioridade</p>
               </div>
             </CardContent>
           </Card>
@@ -290,7 +290,7 @@ export default function TarefasPage() {
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#1A1D1F]">{concluidasMes}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#1A1D1F]/40">Concluídas este mês</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Concluídas este mês</p>
               </div>
             </CardContent>
           </Card>
