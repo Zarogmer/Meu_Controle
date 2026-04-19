@@ -46,7 +46,7 @@ interface NavItem {
   requiresTenant?: boolean;
 }
 
-const allNavItems: NavItem[] = [
+export const allNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, requiresTenant: true },
   { href: '/estoque', label: 'Controle de Produtos', icon: Boxes, requiresTenant: true },
   { href: '/lancamentos', label: 'Controle de Caixa', icon: Receipt, requiresTenant: true },
@@ -63,7 +63,7 @@ const ROLE_LEVEL: Record<UserRole, number> = {
   employee: 10,
 };
 
-function getVisibleItems(role: UserRole | undefined, lojaId: number | null | undefined): NavItem[] {
+export function getVisibleItems(role: UserRole | undefined, lojaId: number | null | undefined): NavItem[] {
   if (!role) return [];
 
   const userLevel = ROLE_LEVEL[role] ?? 0;

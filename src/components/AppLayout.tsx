@@ -15,8 +15,9 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, ChevronDown, Shield, Building2 } from 'lucide-react';
+import { LogOut, User, ChevronDown, Shield, Building2, Sun, Moon } from 'lucide-react';
 import { MascotCube } from '@/components/MascotCube';
+import { useTheme } from 'next-themes';
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Conta Tech',
@@ -33,6 +34,7 @@ const ROLE_COLORS: Record<string, string> = {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -146,6 +148,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/perfil')}>
                   <User className="size-4" />
                   Meu perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2 cursor-pointer"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setTheme(theme === 'dark' ? 'light' : 'dark');
+                  }}
+                >
+                  {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                  {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

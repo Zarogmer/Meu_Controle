@@ -197,19 +197,19 @@ export default function AdminDashboard() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Painel da plataforma
               </p>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Meu Controle
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Gestão global de lojas, usuários e operação multi-tenant
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button onClick={openCreateDialog} className="rounded-full bg-[#1A1D1F] text-white hover:bg-[#1A1D1F]/90">
                 <Plus className="size-4 mr-1.5" />
                 Nova Loja
@@ -300,6 +300,7 @@ export default function AdminDashboard() {
                 <p className="mt-4 text-muted-foreground">Nenhuma loja encontrada.</p>
               </div>
             ) : (
+              <div className="-mx-4 overflow-x-auto sm:mx-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -385,6 +386,7 @@ export default function AdminDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -527,7 +529,7 @@ function MetricCard({ icon, label, value, sub, color }: {
 }) {
   return (
     <Card className="bg-card border border-border/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] transition-all hover:shadow-[0_12px_40px_rgb(37,99,235,0.08)] hover:-translate-y-0.5">
-      <CardContent className="p-6">
+      <CardContent className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
