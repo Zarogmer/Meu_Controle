@@ -321,6 +321,61 @@ export const integracoesCorretora = pgTable('integracoes_corretora', {
   uniqueIndex('uq_integracoes_conta').on(t.contaCorretoraId),
 ]);
 
+// ── Trading (Fase 4) ───────────────────────────────────────────
+// Envio de ordens fica atrás de uma feature flag por usuário/loja,
+// desligada por padrão e ligada só pela conta tech. O próprio usuário
+// escolhe o modo (simulação primeiro) e os limites de risco.
+export const modoTradingEnum = pgEnum('modo_trading', ['simulacao', 'real']);
+
+export const tradingConfig = pgTable('trading_config', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').notNull().references(() => usuarios.id, { onDelete: 'cascade' }),
+  tradingHabilitado: boolean('trading_habilitado').notNull().default(false),
+  habilitadoPor: integer('habilitado_por').references(() => usuarios.id, { onDelete: 'set null' }),
+  habilitadoEm: timestamp('habilitado_em', { withTimezone: true }),
+  modo: modoTradingEnum('modo').notNull().default('simulacao'),
+  quantidadeMaxima: integer('quantidade_maxima').notNull().default(1),
+  perdaDiariaMaxima: integer('perda_diaria_maxima').notNull().default(10000), // centavos
+  /** "Real" exige confirmação explícita; guarda quando o usuário aceitou. */
+  modoRealAceitoEm: timestamp('modo_real_aceito_em', { withTimezone: true }),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex('uq_trading_config_usuario').on(t.usuarioId, t.lojaId),
+]);
+
+// Log de auditoria imutável (append-only; UPDATE/DELETE bloqueados por
+// trigger no banco — ver scripts/migrate-trading.js). Cada ação e cada
+// resposta do conector viram um evento novo; nada é editado.
+export const auditoriaOrdens = pgTable('auditoria_ordens', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').notNull().references(() => usuarios.id, { onDelete: 'cascade' }),
+  contaCorretoraId: integer('conta_corretora_id').references(() => contasCorretora.id, { onDelete: 'set null' }),
+  /** Referência interna da ordem (uuid) — liga envio, respostas e cancelamento. */
+  ordemRef: text('ordem_ref').notNull(),
+  evento: text('evento').notNull(), // envio | envio_recusado | enviada | erro | cancelamento | cancelar_todas | zerar_posicao | resposta_conector
+  modo: modoTradingEnum('modo').notNull(),
+  ativo: text('ativo'),
+  bolsa: text('bolsa'),
+  lado: text('lado'),
+  tipo: text('tipo'),
+  quantidade: integer('quantidade'),
+  preco: numeric('preco', { precision: 18, scale: 6 }),
+  precoStop: numeric('preco_stop', { precision: 18, scale: 6 }),
+  localOrderId: text('local_order_id'),
+  clOrderId: text('cl_order_id'),
+  mensagem: text('mensagem'),
+  detalhes: text('detalhes'), // JSON
+  ipOrigem: text('ip_origem'),
+  userAgent: text('user_agent'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_auditoria_ordens_usuario').on(t.lojaId, t.usuarioId, t.criadoEm),
+  index('idx_auditoria_ordens_ref').on(t.ordemRef),
+]);
+
 // ── Relations ──────────────────────────────────────────────────
 export const lojasRelations = relations(lojas, ({ many }) => ({
   usuarios: many(usuarios),

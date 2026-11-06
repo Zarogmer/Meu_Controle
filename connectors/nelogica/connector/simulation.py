@@ -53,7 +53,7 @@ class SimulationBackend:
         return {
             "mode": self.mode, "ready": True,
             "states": {str(k): {"result": v, "label": T.STATE_LABELS.get(k, {}).get(v, str(v))} for k, v in s.items()},
-            "routing": True, "sdk_types": True, "sdk_types_error": None, "account": self.store.account, "dll_dir": None,
+            "routing": True, "trading_enabled": self.cfg.trading_enabled, "sdk_types": True, "sdk_types_error": None, "account": self.store.account, "dll_dir": None,
         }
 
     def subscribe(self, ticker: str, exchange: str) -> None:
@@ -93,6 +93,68 @@ class SimulationBackend:
                 self.simular_execucao("WINZ26", "F", side=1, quantity=1)
                 self.simular_execucao("WINZ26", "F", side=2, quantity=1)
             self._stop.wait(1.0)
+
+    # ── Roteamento simulado ──────────────────────────────────────
+    def _exigir_roteamento(self) -> None:
+        if not self.cfg.trading_enabled:
+            raise PermissionError("roteamento desligado neste conector (PROFIT_TRADING_ENABLED=0)")
+
+    def send_order(self, ticker: str, exchange: str, side: int, order_type: int, quantity: int,
+                   price: float | None, stop_price: float | None, client_ref: str | None) -> dict:
+        self._exigir_roteamento()
+        ticker, exchange = ticker.upper(), exchange.upper()
+        if (ticker, exchange) not in self.store.subscriptions:
+            self.subscribe(ticker, exchange)
+        q = self.store.get_quote(ticker, exchange)
+        ultimo = q.last if q and q.last else self._preco_inicial(ticker)
+        with self._lock:
+            self._seq += 1
+            seq = self._seq
+        local_id, cl_id = 10_000 + seq, f"SIM{seq:06d}"
+        # A mercado executa na hora no último preço; limitada executa se já estiver "dentro"; senão fica aberta.
+        executa = order_type == T.ORDER_TYPE_MARKET or (order_type == T.ORDER_TYPE_LIMIT and price is not None and ((side == 1 and price >= ultimo) or (side == 2 and price <= ultimo)))
+        preco_exec = ultimo if order_type == T.ORDER_TYPE_MARKET else price
+        order = Order(local_order_id=local_id, cl_order_id=cl_id, ticker=ticker, exchange=exchange, side=side, order_type=order_type,
+                      quantity=quantity, traded_quantity=quantity if executa else 0, price=None if order_type == T.ORDER_TYPE_MARKET else price,
+                      stop_price=stop_price if order_type == T.ORDER_TYPE_STOP_LIMIT else None, average_price=preco_exec if executa else None,
+                      status=2 if executa else 0, client_ref=client_ref)
+        self.store.upsert_order(order)
+        if executa:
+            self.store.add_fill(Fill(id=f"{cl_id}-{quantity}", ticker=ticker, exchange=exchange, side=side, quantity=quantity, price=float(preco_exec),
+                                     executed_at=agora_iso(), order_cl_id=cl_id, order_local_id=local_id, fees=round(0.9 * quantity, 2)))
+        return {"accepted": True, "local_order_id": local_id, "cl_order_id": cl_id, "message": "executada (simulação)" if executa else "aberta (simulação)", "mode": self.mode}
+
+    def cancel_order(self, order_id: str) -> dict:
+        self._exigir_roteamento()
+        alvo = None
+        for o in self.store.orders_list():
+            if str(o.local_order_id) == order_id or o.cl_order_id == order_id:
+                alvo = o
+        if alvo is None:
+            return {"accepted": False, "local_order_id": order_id, "message": T.descrever_retorno(-2147483636), "mode": self.mode}
+        if alvo.status in (2, 4):
+            return {"accepted": False, "local_order_id": order_id, "message": "ordem já finalizada", "mode": self.mode}
+        alvo.status = 4
+        self.store.upsert_order(alvo)
+        return {"accepted": True, "local_order_id": order_id, "message": "cancelada (simulação)", "mode": self.mode}
+
+    def cancel_all_orders(self) -> dict:
+        self._exigir_roteamento()
+        n = 0
+        for o in self.store.orders_list():
+            if o.status in (0, 1, 10, 16):
+                o.status = 4
+                self.store.upsert_order(o)
+                n += 1
+        return {"accepted": True, "local_order_id": None, "message": f"{n} ordem(ns) cancelada(s) (simulação)", "mode": self.mode}
+
+    def zero_position(self, ticker: str, exchange: str, position_type: int, price: float | None) -> dict:
+        self._exigir_roteamento()
+        pos = next((p for p in self.store.positions_from_fills() if p["ticker"] == ticker.upper()), None)
+        if not pos:
+            return {"accepted": False, "local_order_id": None, "message": T.descrever_retorno(-2147483637), "mode": self.mode}
+        side = 2 if pos["quantity"] > 0 else 1
+        return self.send_order(ticker, exchange, side, T.ORDER_TYPE_MARKET, abs(int(pos["quantity"])), None, None, "zeragem")
 
     def simular_execucao(self, ticker: str, exchange: str, side: int, quantity: int, price: float | None = None) -> Fill:
         """Injeta uma execução (POST /sim/fill)."""

@@ -411,6 +411,7 @@ class ProfitDLLBackend:
             "ready": self.ready(),
             "states": {str(k): {"result": v, "label": T.STATE_LABELS.get(k, {}).get(v, str(v))} for k, v in s.items()},
             "routing": self.cfg.routing,
+            "trading_enabled": self.cfg.trading_enabled,
             "sdk_types": self._sdk_ok,
             "sdk_types_error": T.SDK_IMPORT_ERROR,
             "account": self.store.account,
@@ -432,6 +433,87 @@ class ProfitDLLBackend:
         self.store.subscriptions.discard((ticker.upper(), exchange.upper()))
         if self.dll and self._initialized:
             self.dll.UnsubscribeTicker(ticker.upper(), exchange.upper())
+
+    # ── Roteamento [RO] ──────────────────────────────────────────
+    # Senha de roteamento: só do .env desta máquina. Nunca sai nem é logada.
+    def _exigir_roteamento(self) -> None:
+        if not self.cfg.trading_enabled:
+            raise PermissionError("roteamento desligado neste conector (PROFIT_TRADING_ENABLED=0)")
+        if not self.cfg.routing:
+            raise PermissionError("conector iniciado só com market data (PROFIT_MODE=market)")
+        if not self.ready():
+            raise RuntimeError("conexão de roteamento ainda não está pronta")
+        if self._account is None:
+            raise RuntimeError("conta de roteamento não carregada (ver /health account)")
+
+    def _asset(self, ticker: str, exchange: str) -> T.TConnectorAssetIdentifier:
+        return T.TConnectorAssetIdentifier(Version=0, Ticker=ticker.upper(), Exchange=exchange.upper(), FeedType=0)
+
+    def send_order(self, ticker: str, exchange: str, side: int, order_type: int, quantity: int,
+                   price: float | None, stop_price: float | None, client_ref: str | None) -> dict:
+        self._exigir_roteamento()
+        ordem = T.TConnectorSendOrder()
+        ordem.Version = 2
+        ordem.AccountID = self._account
+        ordem.AssetID = self._asset(ticker, exchange)
+        ordem.Password = self.cfg.routing_password
+        ordem.OrderType = int(order_type)
+        ordem.OrderSide = int(side)
+        ordem.Price = -1 if order_type == T.ORDER_TYPE_MARKET or price is None else float(price)
+        ordem.StopPrice = float(stop_price) if order_type == T.ORDER_TYPE_STOP_LIMIT and stop_price is not None else -1
+        ordem.Quantity = int(quantity)
+        ordem.MessageID = 0
+        ret = self.dll.SendOrder(C.byref(ordem))  # Int64: >0 LocalOrderID, <0 erro
+        if ret > 0:
+            self.store.upsert_order(Order(local_order_id=int(ret), cl_order_id=None, ticker=ticker.upper(), exchange=exchange.upper(),
+                                          side=int(side), order_type=int(order_type), quantity=int(quantity), traded_quantity=0,
+                                          price=None if ordem.Price < 0 else ordem.Price, stop_price=None if ordem.StopPrice < 0 else ordem.StopPrice,
+                                          average_price=None, status=16, client_ref=client_ref))
+            log.info("SendOrder aceito LocalOrderID=%s %s %s x%s", ret, ticker, "compra" if side == 1 else "venda", quantity)
+            return {"accepted": True, "local_order_id": int(ret), "cl_order_id": None, "message": "aceita pela DLL; aguardando corretora", "mode": self.mode}
+        msg = T.descrever_retorno(int(ret))
+        log.warning("SendOrder recusado: %s", msg)
+        return {"accepted": False, "local_order_id": None, "cl_order_id": None, "message": msg, "mode": self.mode}
+
+    def cancel_order(self, order_id: str) -> dict:
+        self._exigir_roteamento()
+        c = T.TConnectorCancelOrder()
+        c.Version = 1
+        c.AccountID = self._account
+        c.OrderID.Version = 0
+        if order_id.isdigit():
+            c.OrderID.LocalOrderID = int(order_id)
+            c.OrderID.ClOrderID = None
+        else:
+            c.OrderID.LocalOrderID = 0
+            c.OrderID.ClOrderID = order_id
+        c.Password = self.cfg.routing_password
+        c.MessageID = 0
+        ret = self.dll.SendCancelOrderV2(C.byref(c))  # 0 = NL_OK
+        ok = ret == T.NL_OK
+        return {"accepted": ok, "local_order_id": order_id, "message": "cancelamento enviado" if ok else T.descrever_retorno(int(ret)), "mode": self.mode}
+
+    def cancel_all_orders(self) -> dict:
+        self._exigir_roteamento()
+        c = T.TConnectorCancelAllOrders(Version=0, AccountID=self._account, Password=self.cfg.routing_password)
+        ret = self.dll.SendCancelAllOrdersV2(C.byref(c))
+        ok = ret == T.NL_OK
+        return {"accepted": ok, "local_order_id": None, "message": "cancelar todas enviado" if ok else T.descrever_retorno(int(ret)), "mode": self.mode}
+
+    def zero_position(self, ticker: str, exchange: str, position_type: int, price: float | None) -> dict:
+        self._exigir_roteamento()
+        z = T.TConnectorZeroPosition()
+        z.Version = 2
+        z.AccountID = self._account
+        z.AssetID = self._asset(ticker, exchange)
+        z.Password = self.cfg.routing_password
+        z.Price = -1 if price is None or price <= 0 else float(price)
+        z.PositionType = 2 if int(position_type) == 2 else 1
+        z.MessageID = 0
+        ret = self.dll.SendZeroPositionV2(C.byref(z))  # Int64: >0 LocalOrderID, <0 erro (NL_NO_POSITION se não há posição)
+        if ret > 0:
+            return {"accepted": True, "local_order_id": int(ret), "message": "zeragem enviada", "mode": self.mode}
+        return {"accepted": False, "local_order_id": None, "message": T.descrever_retorno(int(ret)), "mode": self.mode}
 
     def positions(self) -> dict:
         # TODO(nelogica): a função de posição da conta (GetPosition/GetPositionV2) não

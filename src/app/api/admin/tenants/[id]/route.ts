@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSuperAdmin } from '@/lib/auth';
-import { db, lojas, usuarios, produtos, vendas, dividas, gastos, lancamentos, tarefas } from '@/lib/db';
+import { db, lojas, usuarios, produtos, vendas, dividas, gastos, lancamentos, tarefas, tradingConfig } from '@/lib/db';
 import { eq, desc, asc, sql, and, ne } from 'drizzle-orm';
 
 /** GET: View tenant details with all users. */
@@ -35,6 +35,17 @@ export async function GET(
       .from(usuarios)
       .where(eq(usuarios.lojaId, lojaId))
       .orderBy(desc(usuarios.role), asc(usuarios.nome));
+
+    const flags = await db
+      .select({ usuarioId: tradingConfig.usuarioId, tradingHabilitado: tradingConfig.tradingHabilitado, modo: tradingConfig.modo })
+      .from(tradingConfig)
+      .where(eq(tradingConfig.lojaId, lojaId));
+    const flagPorUsuario = new Map(flags.map((f) => [f.usuarioId, f]));
+    const usuariosComFlag = userList.map((u) => ({
+      ...u,
+      tradingHabilitado: flagPorUsuario.get(u.id)?.tradingHabilitado ?? false,
+      modoTrading: flagPorUsuario.get(u.id)?.modo ?? 'simulacao',
+    }));
 
     const now = new Date();
     const firstOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -138,7 +149,7 @@ export async function GET(
 
     return NextResponse.json({
       loja,
-      usuarios: userList,
+      usuarios: usuariosComFlag,
       metricas,
       vendasRecentes: vendasRecentes.map(v => ({
         ...v,

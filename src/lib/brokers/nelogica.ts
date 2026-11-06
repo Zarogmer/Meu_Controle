@@ -1,7 +1,7 @@
 import { assinarRequisicao } from '@/lib/crypto';
 import type {
-  BrokerProvider, ContaRef, Cotacao, FiltrosOrdens, Ordem, OperacaoProvider, PosicaoProvider,
-  StatusOrdem, StatusProvider,
+  BrokerProvider, ContaRef, Cotacao, FiltrosOrdens, Ordem, OperacaoProvider, OrdemEnvio, PosicaoProvider,
+  ResultadoOrdem, StatusOrdem, StatusProvider, ZeragemEnvio,
 } from './types';
 import { bolsaSugerida } from './types';
 
@@ -211,5 +211,50 @@ export class NelogicaProvider implements BrokerProvider {
     };
   }
 
-  // sendOrder / cancelOrder: Fase 4 (atrás de feature flag). Não implementados aqui de propósito.
+  // ── Roteamento (Fase 4) ─────────────────────────────────────
+  // O conector só aceita estas rotas com PROFIT_TRADING_ENABLED=1 e a senha
+  // de roteamento configurada LÁ (nunca passa por aqui).
+
+  private resultado(r: { accepted?: boolean; local_order_id?: number | string | null; cl_order_id?: string | null; message?: string | null; mode?: string }): ResultadoOrdem {
+    return {
+      aceita: !!r.accepted,
+      localOrderId: r.local_order_id !== undefined && r.local_order_id !== null ? String(r.local_order_id) : null,
+      clOrderId: r.cl_order_id ?? null,
+      mensagem: r.message ?? null,
+      modo: r.mode,
+    };
+  }
+
+  async sendOrder(_conta: ContaRef, ordem: OrdemEnvio): Promise<ResultadoOrdem> {
+    const r = await this.chamar<Record<string, unknown>>('POST', '/orders', {
+      ticker: ordem.ativo.toUpperCase(),
+      exchange: ordem.bolsa,
+      side: ordem.lado === 'compra' ? 1 : 2,
+      order_type: ordem.tipo === 'mercado' ? 1 : ordem.tipo === 'limite' ? 2 : 4,
+      quantity: ordem.quantidade,
+      price: ordem.tipo === 'mercado' ? -1 : ordem.preco,
+      stop_price: ordem.tipo === 'stop_limite' ? ordem.precoStop : -1,
+      client_ref: ordem.referencia ?? null,
+    });
+    return this.resultado(r);
+  }
+
+  async cancelOrder(_conta: ContaRef, ordemId: string): Promise<ResultadoOrdem> {
+    const r = await this.chamar<Record<string, unknown>>('POST', `/orders/${encodeURIComponent(ordemId)}/cancel`, {});
+    return this.resultado(r);
+  }
+
+  async cancelAllOrders(): Promise<ResultadoOrdem> {
+    const r = await this.chamar<Record<string, unknown>>('POST', '/orders/cancel-all', {});
+    return this.resultado(r);
+  }
+
+  async zeroPosition(_conta: ContaRef, z: ZeragemEnvio): Promise<ResultadoOrdem> {
+    const r = await this.chamar<Record<string, unknown>>('POST', `/positions/${encodeURIComponent(z.ativo.toUpperCase())}/zero`, {
+      exchange: z.bolsa,
+      position_type: z.tipoPosicao,
+      price: z.preco ?? -1,
+    });
+    return this.resultado(r);
+  }
 }

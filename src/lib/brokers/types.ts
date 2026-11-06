@@ -74,14 +74,28 @@ export interface OrdemEnvio {
   lado: 'compra' | 'venda';
   tipo: 'mercado' | 'limite' | 'stop_limite';
   quantidade: number;
-  preco?: number;
-  precoStop?: number;
+  preco?: number | null;
+  precoStop?: number | null;
+  /** referência interna (uuid) para correlacionar com a auditoria */
+  referencia?: string;
 }
 
 export interface ResultadoOrdem {
   aceita: boolean;
   localOrderId: string | null;
+  clOrderId?: string | null;
   mensagem: string | null;
+  /** 'dll' | 'simulacao' — modo em que o conector executou */
+  modo?: string;
+}
+
+export interface ZeragemEnvio {
+  ativo: string;
+  bolsa: string;
+  /** 1 = day trade, 2 = consolidada (custódia) — enum da ProfitDLL */
+  tipoPosicao: 1 | 2;
+  /** null = a mercado */
+  preco?: number | null;
 }
 
 export interface StatusProvider {
@@ -100,9 +114,11 @@ export interface BrokerProvider {
   /** Execuções desde o cursor (ISO). Devolve também o próximo cursor. */
   getTrades(conta: ContaRef, desde: string | null): Promise<{ trades: OperacaoProvider[]; proximoCursor: string | null }>;
   getQuote(conta: ContaRef, ativo: string, bolsa?: string): Promise<Cotacao>;
-  /** Envio de ordens — Fase 4. Opcional. */
+  /** Envio de ordens — Fase 4, atrás de feature flag. Opcional. */
   sendOrder?(conta: ContaRef, ordem: OrdemEnvio): Promise<ResultadoOrdem>;
-  cancelOrder?(conta: ContaRef, ordemId: string): Promise<void>;
+  cancelOrder?(conta: ContaRef, ordemId: string): Promise<ResultadoOrdem>;
+  cancelAllOrders?(conta: ContaRef): Promise<ResultadoOrdem>;
+  zeroPosition?(conta: ContaRef, zeragem: ZeragemEnvio): Promise<ResultadoOrdem>;
 }
 
 /** Bolsa sugerida pelo código do ativo (B3): futuros em 'F' (BM&F), o resto em 'B' (Bovespa). */

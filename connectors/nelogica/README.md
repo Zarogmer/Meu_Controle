@@ -92,6 +92,31 @@ defina `CONNECTOR_PATH_PREFIX=/conector` para a assinatura bater.
 - A senha de roteamento (ordens) não é usada nesta fase. Fase 4 só entra
   atrás de feature flag.
 
+## Envio de ordens (Fase 4)
+
+Desligado por padrão. Para ligar:
+
+1. `PROFIT_MODE=routing` e `PROFIT_TRADING_ENABLED=1` no `.env`;
+2. `PROFIT_ROUTING_PASSWORD` com a senha de **roteamento** da corretora
+   (diferente da senha de login) — fica só nesta máquina;
+3. reinicie o serviço. O `/health` passa a mostrar `trading_enabled: true`.
+
+Rotas: `POST /orders`, `POST /orders/{id}/cancel`, `POST /orders/cancel-all`,
+`POST /positions/{ticker}/zero`. Todas seguem os artigos de roteamento da
+Nelogica (`SendOrder`, `SendCancelOrderV2`, `SendCancelAllOrdersV2`,
+`SendZeroPositionV2`, estruturas com `Version` 2, `Price = -1` a mercado).
+Só rodam quando `/health` reporta `ROTEAMENTO_BROKER_CONNECTED` e a conta de
+roteamento foi carregada (`account`), o que depende do `profitTypes.py` do
+SDK (ver TODOs).
+
+O conector não conhece os limites de risco: eles ficam no Meu Controle
+(quantidade máxima, perda diária, confirmação dupla, auditoria). Mesmo
+assim, com `PROFIT_SIMULATION=1` as ordens nunca saem desta máquina:
+execute a mercado na hora, limitadas "dentro do preço" executam, fora ficam
+abertas até cancelar. A conta de simulação da própria Nelogica não está
+documentada nos artigos consultados — por isso o modo simulação aqui é
+local (TODO: trocar pela paper account quando houver documentação).
+
 ## Modo simulação
 
 `PROFIT_SIMULATION=1` sobe o serviço sem a DLL, gerando cotações falsas para

@@ -17,6 +17,7 @@ import {
   Zap,
   Target,
   PlugZap,
+  Send,
 } from 'lucide-react';
 import {
   Area,
@@ -157,6 +158,10 @@ export default function InvestimentosPage() {
             <Link href="/investimentos/conexoes" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted">
               <PlugZap className="size-4" />
               Conexões
+            </Link>
+            <Link href="/investimentos/operar" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted">
+              <Send className="size-4" />
+              Operar
             </Link>
             <Button variant="outline" onClick={() => setAba('importar')}>Importar CSV</Button>
             <Button onClick={() => { setAba('operacoes'); setAbrirNova((n) => n + 1); }}>

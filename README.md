@@ -65,6 +65,18 @@ curl -X POST -H "x-cron-secret: $CRON_SECRET" https://<seu-app>/api/cron/sincron
 a cada 5 minutos no horário de pregão. O botão "Sincronizar agora" em
 Investimentos → Conexões faz o mesmo sob demanda.
 
+## Envio de ordens (feature flag)
+
+Desligado por padrão para todo mundo. A conta tech liga por usuário no
+Painel da Plataforma → loja → "Envio de ordens". O usuário começa em
+**simulação** (só aceita conector com `PROFIT_SIMULATION=1`), define
+quantidade máxima por ordem e perda diária máxima, e só passa para
+**real** digitando a confirmação. Toda ordem, cancelamento, zeragem e
+mudança de configuração fica em `auditoria_ordens`, tabela append-only com
+trigger no banco que bloqueia UPDATE/DELETE. Cada usuário opera apenas a
+própria conta com a própria licença — não existe caminho para operar por
+terceiros.
+
 ## Como rodar com Railway
 
 ```bash

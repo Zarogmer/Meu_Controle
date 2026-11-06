@@ -35,6 +35,8 @@ interface Loja {
 }
 
 interface Usuario {
+  tradingHabilitado?: boolean;
+  modoTrading?: string;
   id: number;
   nome: string;
   email: string;
@@ -100,6 +102,30 @@ export default function AdminTenantDetailPage() {
   const [metricas, setMetricas] = useState<Metricas | null>(null);
   const [vendasRecentes, setVendasRecentes] = useState<VendaRecente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tradingBusy, setTradingBusy] = useState<number | null>(null);
+
+  async function toggleTrading(u: Usuario) {
+    const ligar = !u.tradingHabilitado;
+    if (!window.confirm(ligar
+      ? `Liberar envio de ordens para ${u.nome}? Começa em simulação; o usuário escolhe quando ligar o modo real.`
+      : `Desligar envio de ordens para ${u.nome}?`)) return;
+    setTradingBusy(u.id);
+    try {
+      const res = await fetchWithAuth(`/api/admin/trading/${u.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tradingHabilitado: ligar }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Erro');
+      setUsuarios((lista) => lista.map((x) => (x.id === u.id ? { ...x, tradingHabilitado: data.config.tradingHabilitado, modoTrading: data.config.modo } : x)));
+      toast.success(ligar ? 'Envio de ordens liberado (simulação).' : 'Envio de ordens desligado.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro');
+    } finally {
+      setTradingBusy(null);
+    }
+  }
 
   const fetchTenant = useCallback(async () => {
     try {
@@ -336,6 +362,7 @@ export default function AdminTenantDetailPage() {
                     <TableHead>Papel</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Desde</TableHead>
+                    <TableHead>Envio de ordens</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -361,6 +388,20 @@ export default function AdminTenantDetailPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{formatDate(u.criadoEm)}</TableCell>
+                      <TableCell>
+                        {u.role === 'employee' ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Badge variant={u.tradingHabilitado ? 'default' : 'secondary'}>
+                              {u.tradingHabilitado ? (u.modoTrading === 'real' ? 'Ligado · REAL' : 'Ligado · simulação') : 'Desligado'}
+                            </Badge>
+                            <Button variant="outline" size="sm" onClick={() => toggleTrading(u)} disabled={tradingBusy === u.id}>
+                              {u.tradingHabilitado ? 'Desligar' : 'Ligar'}
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

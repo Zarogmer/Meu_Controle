@@ -37,6 +37,8 @@ class Config:
     path_prefix: str
     simulation: bool
     sim_auto_fills: bool
+    trading_enabled: bool
+    routing_password: str
     log_level: str
     log_dir: Path
 
@@ -62,6 +64,10 @@ def carregar(base_dir: Path | None = None) -> Config:
         if faltando:
             raise SystemExit(f"Faltam variáveis: {', '.join(faltando)} (ou use PROFIT_SIMULATION=1)")
 
+    trading = env("PROFIT_TRADING_ENABLED", "0") in ("1", "true", "True")
+    if trading and not simulation and not env("PROFIT_ROUTING_PASSWORD"):
+        raise SystemExit("PROFIT_TRADING_ENABLED=1 exige PROFIT_ROUTING_PASSWORD (senha de roteamento da corretora)")
+
     prefix = env("CONNECTOR_PATH_PREFIX", "")
     if prefix and not prefix.startswith("/"):
         prefix = "/" + prefix
@@ -84,6 +90,8 @@ def carregar(base_dir: Path | None = None) -> Config:
         path_prefix=prefix,
         simulation=simulation,
         sim_auto_fills=env("SIM_AUTO_FILLS", "0") in ("1", "true", "True"),
+        trading_enabled=env("PROFIT_TRADING_ENABLED", "0") in ("1", "true", "True"),
+        routing_password=env("PROFIT_ROUTING_PASSWORD"),
         log_level=env("LOG_LEVEL", "INFO").upper(),
         log_dir=base / env("LOG_DIR", "logs"),
     )

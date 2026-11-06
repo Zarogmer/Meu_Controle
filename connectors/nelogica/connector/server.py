@@ -39,6 +39,23 @@ class SubscribeBody(BaseModel):
     tickers: list[TickerRef]
 
 
+class OrderBody(BaseModel):
+    ticker: str = Field(min_length=1, max_length=20)
+    exchange: str = Field(default="B", min_length=1, max_length=2)
+    side: int = Field(ge=1, le=2)
+    order_type: int = Field(default=1)  # 1 market, 2 limit, 4 stop limit
+    quantity: int = Field(ge=1, le=100_000)
+    price: float | None = None
+    stop_price: float | None = None
+    client_ref: str | None = Field(default=None, max_length=64)
+
+
+class ZeroBody(BaseModel):
+    exchange: str = Field(default="B", min_length=1, max_length=2)
+    position_type: int = Field(default=1, ge=1, le=2)
+    price: float | None = None
+
+
 class SimFillBody(BaseModel):
     ticker: str
     exchange: str = "F"
@@ -116,6 +133,50 @@ def criar_app(cfg: Config, store: Store, backend) -> FastAPI:
         for t in body.tickers:
             backend.unsubscribe(t.ticker, t.exchange)
         return {"subscriptions": [f"{t}/{e}" for t, e in sorted(store.subscriptions)]}
+
+    # ── Roteamento (só com PROFIT_TRADING_ENABLED=1) ─────────────
+    def erro_roteamento(exc: Exception):
+        if isinstance(exc, PermissionError):
+            return JSONResponse({"error": str(exc), "accepted": False}, status_code=403)
+        return JSONResponse({"error": str(exc), "accepted": False}, status_code=409)
+
+    @app.post("/orders")
+    async def send_order(body: OrderBody):
+        if body.order_type not in (1, 2, 4):
+            return JSONResponse({"error": "order_type deve ser 1 (mercado), 2 (limite) ou 4 (stop limite)"}, status_code=400)
+        if body.order_type != 1 and (body.price is None or body.price <= 0):
+            return JSONResponse({"error": "price obrigatório para ordens limitadas"}, status_code=400)
+        if body.order_type == 4 and (body.stop_price is None or body.stop_price <= 0):
+            return JSONResponse({"error": "stop_price obrigatório para stop limite"}, status_code=400)
+        try:
+            log.info("ordem recebida ref=%s %s/%s side=%s type=%s qty=%s", body.client_ref, body.ticker, body.exchange, body.side, body.order_type, body.quantity)
+            return backend.send_order(body.ticker, body.exchange, body.side, body.order_type, body.quantity, body.price, body.stop_price, body.client_ref)
+        except (PermissionError, RuntimeError) as exc:
+            return erro_roteamento(exc)
+
+    @app.post("/orders/cancel-all")
+    async def cancel_all():
+        try:
+            log.info("cancelar todas as ordens")
+            return backend.cancel_all_orders()
+        except (PermissionError, RuntimeError) as exc:
+            return erro_roteamento(exc)
+
+    @app.post("/orders/{order_id}/cancel")
+    async def cancel_order(order_id: str):
+        try:
+            log.info("cancelar ordem %s", order_id)
+            return backend.cancel_order(order_id)
+        except (PermissionError, RuntimeError) as exc:
+            return erro_roteamento(exc)
+
+    @app.post("/positions/{ticker}/zero")
+    async def zero_position(ticker: str, body: ZeroBody):
+        try:
+            log.info("zerar posição %s/%s tipo=%s", ticker, body.exchange, body.position_type)
+            return backend.zero_position(ticker, body.exchange, body.position_type, body.price)
+        except (PermissionError, RuntimeError) as exc:
+            return erro_roteamento(exc)
 
     if cfg.simulation:
         @app.post("/sim/fill")

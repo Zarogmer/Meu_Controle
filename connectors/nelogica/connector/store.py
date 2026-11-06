@@ -46,6 +46,7 @@ class Order:
     stop_price: float | None
     average_price: float | None
     status: int
+    client_ref: str | None = None
     updated_at: str = field(default_factory=agora_iso)
 
     @property
