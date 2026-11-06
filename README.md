@@ -36,6 +36,35 @@ TECH_ADMIN_EMAIL=guilherme@meucontrole.com
 TECH_ADMIN_PASSWORD=defina-uma-senha-segura
 ```
 
+Variáveis da integração com corretora (Fase 3 — conector Nelogica):
+
+```bash
+# 32 bytes em hex (openssl rand -hex 32). Cifra o token do conector no banco (AES-256-GCM).
+INTEGRATIONS_ENC_KEY=
+# Segredo do job de sincronização chamado pelo cron (header x-cron-secret).
+CRON_SECRET=
+# Só em desenvolvimento: aceita URL http:// para o conector. Em produção é sempre https://.
+NELOGICA_ALLOW_HTTP=0
+```
+
+Testes unitários (cálculos da carteira, parser de CSV, criptografia/HMAC): `npm test`.
+
+## Conector Nelogica (investimentos)
+
+A carteira pode ser alimentada automaticamente pela ProfitDLL (Nelogica/Ágora).
+A DLL só roda no Windows, então ela fica em um serviço separado na máquina do
+usuário: `connectors/nelogica/` (Python + FastAPI, README próprio com instalação,
+NSSM e túnel HTTPS). O app guarda só a URL pública e o token do conector, cifrado.
+
+Sincronização periódica: crie um cron no Railway (ou qualquer agendador) que chame
+
+```bash
+curl -X POST -H "x-cron-secret: $CRON_SECRET" https://<seu-app>/api/cron/sincronizar-corretoras
+```
+
+a cada 5 minutos no horário de pregão. O botão "Sincronizar agora" em
+Investimentos → Conexões faz o mesmo sob demanda.
+
 ## Como rodar com Railway
 
 ```bash

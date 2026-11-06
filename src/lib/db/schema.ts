@@ -291,6 +291,36 @@ export const cotacoesCache = pgTable('cotacoes_cache', {
   atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Integrações com corretora (Fase 3) ─────────────────────────
+// Liga uma conta de corretora a um conector externo (hoje: Nelogica/
+// ProfitDLL rodando no Windows do usuário). O token do conector fica
+// criptografado (AES-256-GCM, chave em INTEGRATIONS_ENC_KEY). Senha da
+// corretora NUNCA é guardada aqui — ela vive só no conector.
+export const statusIntegracaoEnum = pgEnum('status_integracao', ['desconectado', 'conectado', 'erro']);
+
+export const integracoesCorretora = pgTable('integracoes_corretora', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').notNull().references(() => usuarios.id, { onDelete: 'cascade' }),
+  contaCorretoraId: integer('conta_corretora_id').notNull().references(() => contasCorretora.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('nelogica'),
+  urlConector: text('url_conector').notNull(),
+  tokenCriptografado: text('token_criptografado').notNull(),
+  chaveAtivacaoCriptografada: text('chave_ativacao_criptografada'),
+  status: statusIntegracaoEnum('status').notNull().default('desconectado'),
+  ultimoSyncEm: timestamp('ultimo_sync_em', { withTimezone: true }),
+  ultimoErro: text('ultimo_erro'),
+  /** Cursor de sincronização de execuções (ISO 8601 devolvido pelo conector). */
+  cursorTrades: text('cursor_trades'),
+  /** Snapshot do último /health (JSON) para a tela de conexões. */
+  ultimoHealth: text('ultimo_health'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_integracoes_loja_usuario').on(t.lojaId, t.usuarioId),
+  uniqueIndex('uq_integracoes_conta').on(t.contaCorretoraId),
+]);
+
 // ── Relations ──────────────────────────────────────────────────
 export const lojasRelations = relations(lojas, ({ many }) => ({
   usuarios: many(usuarios),
@@ -346,6 +376,11 @@ export const contasCorretoraRelations = relations(contasCorretora, ({ one, many 
   loja: one(lojas, { fields: [contasCorretora.lojaId], references: [lojas.id] }),
   usuario: one(usuarios, { fields: [contasCorretora.usuarioId], references: [usuarios.id] }),
   operacoes: many(operacoes),
+}));
+
+export const integracoesCorretoraRelations = relations(integracoesCorretora, ({ one }) => ({
+  contaCorretora: one(contasCorretora, { fields: [integracoesCorretora.contaCorretoraId], references: [contasCorretora.id] }),
+  usuario: one(usuarios, { fields: [integracoesCorretora.usuarioId], references: [usuarios.id] }),
 }));
 
 export const operacoesRelations = relations(operacoes, ({ one }) => ({

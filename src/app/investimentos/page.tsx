@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import {
   TrendingUp,
   Zap,
   Target,
+  PlugZap,
 } from 'lucide-react';
 import {
   Area,
@@ -151,7 +153,11 @@ export default function InvestimentosPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Investimentos</p>
             <h1 className="text-2xl font-bold tracking-tight">Carteira e resultados</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Link href="/investimentos/conexoes" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted">
+              <PlugZap className="size-4" />
+              Conexões
+            </Link>
             <Button variant="outline" onClick={() => setAba('importar')}>Importar CSV</Button>
             <Button onClick={() => { setAba('operacoes'); setAbrirNova((n) => n + 1); }}>
               <Plus className="size-4" data-icon="inline-start" />
