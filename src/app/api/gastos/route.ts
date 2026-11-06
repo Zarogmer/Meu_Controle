@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthWithTenant } from '@/lib/auth';
 import { db, gastos } from '@/lib/db';
-import { eq, and, desc, ilike, or } from 'drizzle-orm';
+import { eq, and, desc, ilike, or, gte, lte, sql, type SQL } from 'drizzle-orm';
 import { isDemoMode } from '@/lib/demo-data';
+import { gastosVisiveis } from '@/lib/contas-recorrentes';
+import { isCompetencia, isDataISO, competenciaDeData } from '@/lib/contas';
+
+/**
+ * Competência efetiva de um gasto: a competência informada ou, na falta
+ * dela, o mês da data do gasto. Filtros de ano/mês e resumos usam isso
+ * para que a conta de março paga em abril continue contando em março.
+ */
+const competenciaEfetiva = sql<string>`COALESCE(${gastos.competencia}, LEFT(${gastos.dataGasto}, 7))`;
 
 export async function GET(request: NextRequest) {
   if (isDemoMode) {
@@ -12,24 +21,23 @@ export async function GET(request: NextRequest) {
   try {
     const { lojaId, userId, role } = await requireAuthWithTenant();
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const tipo = searchParams.get('tipo') || '';
     const status = searchParams.get('status') || '';
     const busca = searchParams.get('busca') || '';
+    const ano = searchParams.get('ano') || '';
+    const mes = searchParams.get('mes') || '';
+    const categoria = searchParams.get('categoria') || '';
+    const contaRecorrenteId = searchParams.get('contaRecorrenteId') || '';
+    const dataInicio = searchParams.get('dataInicio') || '';
+    const dataFim = searchParams.get('dataFim') || '';
 
-    const conditions = [eq(gastos.lojaId, lojaId)];
-
-    // Funcionários só veem gastos da empresa; pessoal é do próprio usuário.
-    if (role === 'employee') {
-      conditions.push(eq(gastos.tipo, 'empresa'));
-    }
+    // Isolamento por loja + regra de gasto pessoal (só o próprio usuário;
+    // funcionário nunca vê pessoal).
+    const conditions: SQL[] = [gastosVisiveis({ lojaId, userId, role })];
 
     if (tipo === 'pessoal' || tipo === 'empresa') {
       conditions.push(eq(gastos.tipo, tipo));
-      // Gastos pessoais: só mostra os do próprio usuário logado.
-      if (tipo === 'pessoal' && userId) {
-        conditions.push(eq(gastos.usuarioId, userId));
-      }
     }
 
     if (status === 'pago' || status === 'pendente') {
@@ -43,6 +51,34 @@ export async function GET(request: NextRequest) {
           ilike(gastos.categoria, `%${busca}%`),
         )!,
       );
+    }
+
+    // ano + mes → competência exata; só ano → prefixo do ano.
+    if (/^\d{4}$/.test(ano)) {
+      const mesNum = parseInt(mes, 10);
+      if (Number.isInteger(mesNum) && mesNum >= 1 && mesNum <= 12) {
+        conditions.push(eq(competenciaEfetiva, `${ano}-${String(mesNum).padStart(2, '0')}`));
+      } else {
+        conditions.push(sql`${competenciaEfetiva} LIKE ${`${ano}-%`}`);
+      }
+    } else if (isCompetencia(mes)) {
+      conditions.push(eq(competenciaEfetiva, mes));
+    }
+
+    if (categoria) {
+      conditions.push(ilike(gastos.categoria, categoria));
+    }
+
+    const contaId = parseInt(contaRecorrenteId, 10);
+    if (Number.isInteger(contaId) && contaId > 0) {
+      conditions.push(eq(gastos.contaRecorrenteId, contaId));
+    }
+
+    if (isDataISO(dataInicio)) {
+      conditions.push(gte(gastos.dataGasto, dataInicio));
+    }
+    if (isDataISO(dataFim)) {
+      conditions.push(lte(gastos.dataGasto, dataFim));
     }
 
     const rows = await db
@@ -63,10 +99,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { lojaId, userId } = await requireAuthWithTenant();
+    const { lojaId, userId, role } = await requireAuthWithTenant();
 
     const body = await request.json();
-    const { descricao, valor, tipo, status, categoria, dataGasto, observacao } = body;
+    const {
+      descricao, valor, tipo, status, categoria, dataGasto, observacao,
+      contaRecorrenteId, dataVencimento, competencia,
+    } = body;
 
     if (!descricao || !descricao.trim()) {
       return NextResponse.json({ error: 'Descrição é obrigatória' }, { status: 400 });
@@ -77,7 +116,19 @@ export async function POST(request: NextRequest) {
     }
 
     const tipoFinal: 'pessoal' | 'empresa' = tipo === 'pessoal' ? 'pessoal' : 'empresa';
+    if (tipoFinal === 'pessoal' && role === 'employee') {
+      return NextResponse.json({ error: 'Sem permissão para gastos pessoais' }, { status: 403 });
+    }
     const valorCentavos = Math.round(parseFloat(valor) * 100);
+    const dataFinal = isDataISO(dataGasto) ? dataGasto : new Date().toISOString().split('T')[0];
+
+    const contaId = parseInt(String(contaRecorrenteId ?? ''), 10);
+    const vencimento = isDataISO(dataVencimento) ? dataVencimento : null;
+    const competenciaFinal = isCompetencia(competencia)
+      ? competencia
+      : vencimento
+        ? competenciaDeData(vencimento)
+        : null;
 
     const [gasto] = await db
       .insert(gastos)
@@ -89,8 +140,11 @@ export async function POST(request: NextRequest) {
         tipo: tipoFinal,
         status: status === 'pendente' ? 'pendente' : 'pago',
         categoria: categoria?.trim() || null,
-        dataGasto: dataGasto || new Date().toISOString().split('T')[0],
+        dataGasto: dataFinal,
         observacao: observacao?.trim() || null,
+        contaRecorrenteId: Number.isInteger(contaId) && contaId > 0 ? contaId : null,
+        dataVencimento: vencimento,
+        competencia: competenciaFinal,
       })
       .returning();
 

@@ -18,6 +18,24 @@ export async function uploadImage(
 }
 
 /**
+ * Upload any file (PDF, image...) to Vercel Blob storage.
+ * Used for bill attachments (fatura/boleto). Returns the public URL.
+ */
+export async function uploadFile(
+  file: File | Blob,
+  lojaId: number,
+  filename: string,
+  folder = 'anexos'
+): Promise<string> {
+  const pathname = `lojas/${lojaId}/${folder}/${Date.now()}-${filename}`;
+  const blob = await put(pathname, file, {
+    access: 'public',
+    addRandomSuffix: false,
+  });
+  return blob.url;
+}
+
+/**
  * Delete an image from Vercel Blob storage.
  * Silently ignores errors (image may already be deleted).
  */

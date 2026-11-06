@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthWithTenant } from '@/lib/auth';
 import { db, gastos } from '@/lib/db';
 import { eq, and } from 'drizzle-orm';
+import { deleteImage } from '@/lib/blob';
+import { isCompetencia, isDataISO, competenciaDeData } from '@/lib/contas';
 
 export async function PUT(
   request: NextRequest,
@@ -28,7 +30,10 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { descricao, valor, tipo, status, categoria, dataGasto, observacao } = body;
+    const {
+      descricao, valor, tipo, status, categoria, dataGasto, observacao,
+      contaRecorrenteId, dataVencimento, competencia,
+    } = body;
 
     if (!descricao || !descricao.trim()) {
       return NextResponse.json({ error: 'Descrição é obrigatória' }, { status: 400 });
@@ -36,7 +41,28 @@ export async function PUT(
 
     const tipoFinal: 'pessoal' | 'empresa' =
       tipo === 'pessoal' ? 'pessoal' : tipo === 'empresa' ? 'empresa' : existing.tipo;
+    if (tipoFinal === 'pessoal' && role === 'employee') {
+      return NextResponse.json({ error: 'Sem permissão para gastos pessoais' }, { status: 403 });
+    }
     const valorCentavos = Math.round(parseFloat(valor) * 100);
+    if (!Number.isFinite(valorCentavos) || valorCentavos <= 0) {
+      return NextResponse.json({ error: 'Valor deve ser maior que zero' }, { status: 400 });
+    }
+
+    // Campos de conta fixa: `undefined` mantém, `null`/'' limpa.
+    const vencimento =
+      dataVencimento === undefined ? existing.dataVencimento
+        : isDataISO(dataVencimento) ? dataVencimento : null;
+    const competenciaFinal =
+      competencia === undefined
+        ? existing.competencia ?? (vencimento ? competenciaDeData(vencimento) : null)
+        : isCompetencia(competencia) ? competencia
+          : vencimento ? competenciaDeData(vencimento) : null;
+    let contaId = existing.contaRecorrenteId;
+    if (contaRecorrenteId !== undefined) {
+      const parsed = parseInt(String(contaRecorrenteId ?? ''), 10);
+      contaId = Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+    }
 
     await db
       .update(gastos)
@@ -46,9 +72,12 @@ export async function PUT(
         tipo: tipoFinal,
         status: status === 'pendente' ? 'pendente' : status === 'pago' ? 'pago' : existing.status,
         categoria: categoria?.trim() || null,
-        dataGasto: dataGasto || existing.dataGasto,
+        dataGasto: isDataISO(dataGasto) ? dataGasto : existing.dataGasto,
         observacao: observacao?.trim() || null,
         usuarioId: tipoFinal === 'pessoal' ? existing.usuarioId ?? userId ?? null : null,
+        contaRecorrenteId: contaId,
+        dataVencimento: vencimento,
+        competencia: competenciaFinal,
         atualizadoEm: new Date(),
       })
       .where(and(eq(gastos.id, gastoId), eq(gastos.lojaId, lojaId)));
@@ -95,6 +124,10 @@ export async function DELETE(
     await db
       .delete(gastos)
       .where(and(eq(gastos.id, gastoId), eq(gastos.lojaId, lojaId)));
+
+    if (existing.anexoUrl) {
+      await deleteImage(existing.anexoUrl);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

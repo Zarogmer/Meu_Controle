@@ -23,6 +23,8 @@ import {
   TrendingUp,
   Wallet,
   Boxes,
+  CalendarClock,
+  TriangleAlert,
 } from 'lucide-react';
 import {
   Area,
@@ -155,6 +157,25 @@ interface DividaResumo {
   dividasVencidas: number;
   valorVencido: number;
   devedoresRecentes: { nome: string; valor: number; vencimento: string; status: string }[];
+}
+
+interface ContasMesData {
+  competencia: string;
+  previsaoMes: {
+    pago: number;
+    pendente: number;
+    naoLancado: number;
+    total: number;
+    qtdPagos: number;
+    qtdPendentes: number;
+    contasNaoLancadas: { id: number; nome: string; valorEstimado: number; diaVencimento: number }[];
+  };
+  vencimentos: {
+    atrasados: { id: number; descricao: string; valor: number; dataVencimento: string | null }[];
+    proximos: { id: number; descricao: string; valor: number; dataVencimento: string | null }[];
+    valorAtrasado: number;
+    valorProximos: number;
+  };
 }
 
 function ChartTooltip({ active, payload }: { active?: boolean; payload?: { value: number }[] }) {
@@ -291,6 +312,7 @@ export default function DashboardPage() {
   const [vendasSemana, setVendasSemana] = useState<{ semana: string; total: number }[]>([]);
   const [tarefasPendentes, setTarefasPendentes] = useState<TarefasPendentesData | null>(null);
   const [lancamentosRecentes, setLancamentosRecentes] = useState<LancamentosRecentesData | null>(null);
+  const [contasMes, setContasMes] = useState<ContasMesData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -303,7 +325,7 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       const qs = `periodo=${periodo}`;
-      const [resumoRes, widgetsRes, estoqueRes, topRes, vendasRes, dividasRes, semanaRes, tarefasRes, lancamentosRes] = await Promise.all([
+      const [resumoRes, widgetsRes, estoqueRes, topRes, vendasRes, dividasRes, semanaRes, tarefasRes, lancamentosRes, contasMesRes] = await Promise.all([
         fetchWithAuth(`/api/dashboard/resumo?${qs}`),
         fetchWithAuth('/api/dashboard/widgets'),
         fetchWithAuth('/api/dashboard/estoque-baixo'),
@@ -313,6 +335,7 @@ export default function DashboardPage() {
         fetchWithAuth(`/api/dashboard/vendas-semana?${qs}`),
         fetchWithAuth('/api/dashboard/tarefas-pendentes'),
         fetchWithAuth('/api/dashboard/lancamentos-recentes'),
+        fetchWithAuth('/api/gastos/resumo'),
       ]);
 
       if (resumoRes.ok) setResumo(await resumoRes.json());
@@ -324,6 +347,7 @@ export default function DashboardPage() {
       if (semanaRes.ok) setVendasSemana((await semanaRes.json()).vendas ?? []);
       if (tarefasRes.ok) setTarefasPendentes(await tarefasRes.json());
       if (lancamentosRes.ok) setLancamentosRecentes(await lancamentosRes.json());
+      if (contasMesRes.ok) setContasMes(await contasMesRes.json());
     } catch {
       // silent by design for dashboard
     } finally {
@@ -585,6 +609,8 @@ export default function DashboardPage() {
           </div>
         </section>
 
+        <ContasDoMesSection data={contasMes} />
+
         <section className="grid gap-4 xl:grid-cols-2">
           <ListCard
             title="Rotinas prioritárias"
@@ -761,6 +787,113 @@ export default function DashboardPage() {
         </section>
       </div>
     </AppLayout>
+  );
+}
+
+function ContasDoMesSection({ data }: { data: ContasMesData | null }) {
+  const previsao = data?.previsaoMes;
+  const venc = data?.vencimentos;
+  const total = previsao?.total ?? 0;
+  const pago = previsao?.pago ?? 0;
+  const percentual = total > 0 ? Math.min(100, Math.round((pago / total) * 100)) : 0;
+  const atrasados = venc?.atrasados ?? [];
+  const proximos = venc?.proximos ?? [];
+  const lista = [
+    ...atrasados.map((item) => ({ ...item, vencido: true })),
+    ...proximos.map((item) => ({ ...item, vencido: false })),
+  ].slice(0, 5);
+
+  return (
+    <section className="grid gap-4 xl:grid-cols-2">
+      <div className="content-card p-6">
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Contas do mês
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-foreground">
+              Previsto x pago
+            </h2>
+          </div>
+          <Link href="/gastos" className="text-sm font-medium text-primary hover:underline">
+            Ver gastos
+          </Link>
+        </div>
+
+        <div className="mb-2 flex items-end justify-between">
+          <div>
+            <p className="text-3xl font-bold text-foreground">{fmt(pago)}</p>
+            <p className="text-sm text-muted-foreground">pago de {fmt(total)} previstos</p>
+          </div>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {percentual}%
+          </span>
+        </div>
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percentual}%` }} />
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <MetricPill label="Pendente" value={fmt(previsao?.pendente ?? 0)} />
+          <MetricPill label="A lançar" value={fmt(previsao?.naoLancado ?? 0)} />
+          <MetricPill label="Contas pagas" value={`${previsao?.qtdPagos ?? 0} de ${(previsao?.qtdPagos ?? 0) + (previsao?.qtdPendentes ?? 0) + (previsao?.contasNaoLancadas.length ?? 0)}`} />
+        </div>
+      </div>
+
+      <div className="content-card p-6">
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Próximos vencimentos
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-foreground">
+              Contas a pagar nos próximos dias
+            </h2>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <CalendarClock className="size-4" />
+          </div>
+        </div>
+
+        {atrasados.length > 0 && (
+          <div className="mb-4 rounded-2xl border border-red-500/20 bg-red-500/8 px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-medium text-red-600 dark:text-red-400">
+              <TriangleAlert className="size-4" />
+              {atrasados.length} conta(s) vencida(s) somando {fmt(venc?.valorAtrasado ?? 0)}.
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {lista.length === 0 ? (
+            <EmptyMessage message="Nenhuma conta vence nos próximos 7 dias." />
+          ) : (
+            lista.map((item) => (
+              <div key={item.id} className="flex items-center justify-between rounded-2xl border border-border/70 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-foreground">{item.descricao}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Vencimento {fmtDate(item.dataVencimento)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-foreground">{fmt(item.valor)}</p>
+                  <p className={`text-xs font-medium ${item.vencido ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
+                    {item.vencido ? 'Vencida' : 'Em aberto'}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="mt-5">
+          <Link href="/gastos" className="text-sm font-medium text-primary hover:underline">
+            Abrir contas fixas
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 

@@ -167,6 +167,38 @@ export const lancamentos = pgTable('lancamentos', {
 export const tipoGastoEnum = pgEnum('tipo_gasto', ['pessoal', 'empresa']);
 export const statusGastoEnum = pgEnum('status_gasto', ['pago', 'pendente']);
 
+// ── Contas recorrentes ─────────────────────────────────────────
+// Contas fixas (luz, água, internet, aluguel, cartão...). Todo mês o
+// sistema gera um gasto `pendente` por conta ativa (ver
+// /api/contas-recorrentes/gerar). `valorEstimado` é só a previsão; o
+// valor real fica no gasto quando ele é marcado como pago.
+export const categoriaContaEnum = pgEnum('categoria_conta', [
+  'luz',
+  'agua',
+  'internet',
+  'aluguel',
+  'cartao',
+  'outros',
+]);
+
+export const contasRecorrentes = pgTable('contas_recorrentes', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').references(() => usuarios.id, { onDelete: 'set null' }),
+  tipo: tipoGastoEnum('tipo').notNull().default('empresa'),
+  nome: text('nome').notNull(),
+  categoria: categoriaContaEnum('categoria').notNull().default('outros'),
+  valorEstimado: integer('valor_estimado').notNull().default(0),
+  diaVencimento: integer('dia_vencimento').notNull().default(10),
+  ativa: boolean('ativa').notNull().default(true),
+  observacao: text('observacao'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_contas_recorrentes_loja').on(t.lojaId),
+  index('idx_contas_recorrentes_loja_tipo').on(t.lojaId, t.tipo),
+]);
+
 export const gastos = pgTable('gastos', {
   id: serial('id').primaryKey(),
   lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
@@ -178,12 +210,19 @@ export const gastos = pgTable('gastos', {
   dataGasto: text('data_gasto').notNull(),
   status: statusGastoEnum('status').notNull().default('pago'),
   observacao: text('observacao'),
+  // Ligação com contas fixas: fatura gerada a partir de uma conta recorrente.
+  contaRecorrenteId: integer('conta_recorrente_id').references(() => contasRecorrentes.id, { onDelete: 'set null' }),
+  dataVencimento: text('data_vencimento'), // YYYY-MM-DD
+  competencia: text('competencia'), // YYYY-MM (mês a que a conta se refere)
+  anexoUrl: text('anexo_url'), // fatura/boleto (Vercel Blob)
   criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
   atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('idx_gastos_loja').on(t.lojaId),
   index('idx_gastos_loja_tipo').on(t.lojaId, t.tipo),
   index('idx_gastos_loja_data').on(t.lojaId, t.dataGasto),
+  index('idx_gastos_loja_competencia').on(t.lojaId, t.competencia),
+  index('idx_gastos_conta_recorrente').on(t.contaRecorrenteId),
 ]);
 
 // ── Relations ──────────────────────────────────────────────────
@@ -196,6 +235,7 @@ export const lojasRelations = relations(lojas, ({ many }) => ({
   tarefas: many(tarefas),
   lancamentos: many(lancamentos),
   gastos: many(gastos),
+  contasRecorrentes: many(contasRecorrentes),
 }));
 
 export const usuariosRelations = relations(usuarios, ({ one }) => ({
@@ -233,4 +273,11 @@ export const lancamentosRelations = relations(lancamentos, ({ one }) => ({
 export const gastosRelations = relations(gastos, ({ one }) => ({
   loja: one(lojas, { fields: [gastos.lojaId], references: [lojas.id] }),
   usuario: one(usuarios, { fields: [gastos.usuarioId], references: [usuarios.id] }),
+  contaRecorrente: one(contasRecorrentes, { fields: [gastos.contaRecorrenteId], references: [contasRecorrentes.id] }),
+}));
+
+export const contasRecorrentesRelations = relations(contasRecorrentes, ({ one, many }) => ({
+  loja: one(lojas, { fields: [contasRecorrentes.lojaId], references: [lojas.id] }),
+  usuario: one(usuarios, { fields: [contasRecorrentes.usuarioId], references: [usuarios.id] }),
+  gastos: many(gastos),
 }));
