@@ -121,6 +121,21 @@ export async function requireAdminWithTenant(): Promise<JwtPayload & { lojaId: n
   return auth as JwtPayload & { lojaId: number };
 }
 
+/**
+ * Investimentos: só owner e super_admin, sempre com loja. Funcionário
+ * recebe 'Permissão insuficiente' (mapear para 403 na rota).
+ */
+export async function requireInvestidor(): Promise<JwtPayload & { lojaId: number }> {
+  const auth = await requireAuth();
+  if (auth.role === 'employee') {
+    throw new Error('Permissão insuficiente');
+  }
+  if (!auth.lojaId) {
+    throw new Error('Operação requer contexto de loja');
+  }
+  return auth as JwtPayload & { lojaId: number };
+}
+
 // ── Permission check helpers (no throw) ─────────────────────────
 export function hasRole(auth: JwtPayload, minimumRole: UserRole): boolean {
   return (ROLE_HIERARCHY[auth.role] ?? 0) >= (ROLE_HIERARCHY[minimumRole] ?? 0);

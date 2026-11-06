@@ -15,6 +15,7 @@ const MIGRATIONS = [
   'migrate-profile-fields.js',
   'migrate-gastos.js',
   'migrate-contas-recorrentes.js',
+  'migrate-investimentos.js',
 ];
 
 for (const script of MIGRATIONS) {

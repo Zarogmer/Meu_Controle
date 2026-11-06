@@ -25,6 +25,7 @@ import {
   Boxes,
   CalendarClock,
   TriangleAlert,
+  Landmark,
 } from 'lucide-react';
 import {
   Area,
@@ -157,6 +158,20 @@ interface DividaResumo {
   dividasVencidas: number;
   valorVencido: number;
   devedoresRecentes: { nome: string; valor: number; vencimento: string; status: string }[];
+}
+
+interface PatrimonioData {
+  caixa: number;
+  investimentos: number;
+  contasPendentes: number;
+  patrimonio: number;
+  detalhes: {
+    entradasVendas: number;
+    entradasLancamentos: number;
+    saidasGastos: number;
+    posicoesAbertas: number;
+    resultadoRealizado: number;
+  } | null;
 }
 
 interface ContasMesData {
@@ -313,6 +328,7 @@ export default function DashboardPage() {
   const [tarefasPendentes, setTarefasPendentes] = useState<TarefasPendentesData | null>(null);
   const [lancamentosRecentes, setLancamentosRecentes] = useState<LancamentosRecentesData | null>(null);
   const [contasMes, setContasMes] = useState<ContasMesData | null>(null);
+  const [patrimonio, setPatrimonio] = useState<PatrimonioData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -348,12 +364,22 @@ export default function DashboardPage() {
       if (tarefasRes.ok) setTarefasPendentes(await tarefasRes.json());
       if (lancamentosRes.ok) setLancamentosRecentes(await lancamentosRes.json());
       if (contasMesRes.ok) setContasMes(await contasMesRes.json());
+
+      // Visão consolidada: só para o dono (funcionário recebe 403 e o card não aparece).
+      if (user && user.role !== 'employee') {
+        try {
+          const patRes = await fetchWithAuth('/api/dashboard/patrimonio');
+          if (patRes.ok) setPatrimonio(await patRes.json());
+        } catch {
+          // card fica oculto
+        }
+      }
     } catch {
       // silent by design for dashboard
     } finally {
       setLoading(false);
     }
-  }, [periodo, fetchWithAuth]);
+  }, [periodo, fetchWithAuth, user]);
 
   useEffect(() => {
     fetchData();
@@ -609,6 +635,8 @@ export default function DashboardPage() {
           </div>
         </section>
 
+        {patrimonio && <PatrimonioSection data={patrimonio} />}
+
         <ContasDoMesSection data={contasMes} />
 
         <section className="grid gap-4 xl:grid-cols-2">
@@ -787,6 +815,51 @@ export default function DashboardPage() {
         </section>
       </div>
     </AppLayout>
+  );
+}
+
+function PatrimonioSection({ data }: { data: PatrimonioData }) {
+  const negativo = data.patrimonio < 0;
+  return (
+    <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="relative overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(135deg,rgba(37,99,235,0.12),rgba(14,165,233,0.04))] p-6">
+        <div className="relative z-10 flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Visão consolidada
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-foreground">Patrimônio</h2>
+            <p className={`mt-4 text-4xl font-bold tracking-tight ${negativo ? 'text-red-600 dark:text-red-400' : 'text-foreground'}`}>
+              {fmt(data.patrimonio)}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Caixa + investimentos − contas pendentes do mês
+            </p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Landmark className="size-5" />
+          </div>
+        </div>
+        <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+      </div>
+      <div className="content-card grid gap-3 p-6 sm:grid-cols-3 xl:grid-cols-1">
+        <div className="rounded-2xl bg-muted/70 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Caixa</p>
+          <p className="mt-1 text-lg font-semibold text-foreground">{fmt(data.caixa)}</p>
+          <p className="text-[11px] text-muted-foreground">vendas + lançamentos pagos − gastos pagos</p>
+        </div>
+        <Link href="/investimentos" className="rounded-2xl bg-muted/70 px-4 py-3 transition-colors hover:bg-muted">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Investimentos</p>
+          <p className="mt-1 text-lg font-semibold text-foreground">{fmt(data.investimentos)}</p>
+          <p className="text-[11px] text-muted-foreground">{data.detalhes?.posicoesAbertas ?? 0} posição(ões) aberta(s)</p>
+        </Link>
+        <Link href="/gastos" className="rounded-2xl bg-muted/70 px-4 py-3 transition-colors hover:bg-muted">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Contas pendentes</p>
+          <p className="mt-1 text-lg font-semibold text-red-600 dark:text-red-400">− {fmt(data.contasPendentes)}</p>
+          <p className="text-[11px] text-muted-foreground">pendentes e a lançar neste mês</p>
+        </Link>
+      </div>
+    </section>
   );
 }
 

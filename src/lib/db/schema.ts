@@ -7,6 +7,8 @@ import {
   timestamp,
   real,
   index,
+  uniqueIndex,
+  numeric,
   pgEnum,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
@@ -225,6 +227,70 @@ export const gastos = pgTable('gastos', {
   index('idx_gastos_conta_recorrente').on(t.contaRecorrenteId),
 ]);
 
+// ── Investimentos ──────────────────────────────────────────────
+// Carteira e operações do dono (owner/super_admin). Tudo filtra por
+// lojaId E usuarioId: investimento é pessoal, nunca aparece para a
+// equipe nem para outro dono da mesma loja.
+export const origemContaCorretoraEnum = pgEnum('origem_conta_corretora', ['manual', 'nelogica']);
+export const mercadoOperacaoEnum = pgEnum('mercado_operacao', ['acoes', 'futuros', 'opcoes', 'fii', 'outros']);
+export const ladoOperacaoEnum = pgEnum('lado_operacao', ['compra', 'venda']);
+export const modalidadeOperacaoEnum = pgEnum('modalidade_operacao', ['daytrade', 'swing']);
+export const origemOperacaoEnum = pgEnum('origem_operacao', ['manual', 'importacao', 'nelogica']);
+
+export const contasCorretora = pgTable('contas_corretora', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').notNull().references(() => usuarios.id, { onDelete: 'cascade' }),
+  corretora: text('corretora').notNull().default('outra'), // 'agora' | 'outra' | ...
+  apelido: text('apelido').notNull(),
+  conta: text('conta'), // número da conta na corretora (texto livre)
+  origem: origemContaCorretoraEnum('origem').notNull().default('manual'),
+  ativa: boolean('ativa').notNull().default(true),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_contas_corretora_loja_usuario').on(t.lojaId, t.usuarioId),
+]);
+
+// Preço fica em numeric (futuros de índice usam pontos, opções têm
+// 2+ casas). `multiplicador` converte pontos em reais por contrato
+// (WIN = 0.2, WDO = 10, ações = 1). Taxas em centavos.
+export const operacoes = pgTable('operacoes', {
+  id: serial('id').primaryKey(),
+  lojaId: integer('loja_id').notNull().references(() => lojas.id, { onDelete: 'cascade' }),
+  usuarioId: integer('usuario_id').notNull().references(() => usuarios.id, { onDelete: 'cascade' }),
+  contaCorretoraId: integer('conta_corretora_id').notNull().references(() => contasCorretora.id, { onDelete: 'cascade' }),
+  ativo: text('ativo').notNull(), // PETR4, WINZ26...
+  mercado: mercadoOperacaoEnum('mercado').notNull().default('acoes'),
+  lado: ladoOperacaoEnum('lado').notNull(),
+  quantidade: integer('quantidade').notNull(),
+  preco: numeric('preco', { precision: 18, scale: 6 }).notNull(),
+  multiplicador: numeric('multiplicador', { precision: 12, scale: 4 }).notNull().default('1'),
+  taxas: integer('taxas').notNull().default(0),
+  dataOperacao: text('data_operacao').notNull(), // YYYY-MM-DD
+  horario: text('horario'), // HH:MM:SS, quando a fonte informa
+  modalidade: modalidadeOperacaoEnum('modalidade').notNull().default('swing'),
+  origem: origemOperacaoEnum('origem').notNull().default('manual'),
+  idExterno: text('id_externo'), // id da corretora/Profit, para não duplicar
+  hashDedupe: text('hash_dedupe'), // hash(data+ativo+lado+qtd+preço[+hora]) para importação sem id
+  observacao: text('observacao'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_operacoes_loja_usuario').on(t.lojaId, t.usuarioId),
+  index('idx_operacoes_conta_data').on(t.contaCorretoraId, t.dataOperacao),
+  index('idx_operacoes_usuario_ativo').on(t.usuarioId, t.ativo),
+  uniqueIndex('uq_operacoes_conta_id_externo').on(t.contaCorretoraId, t.idExterno),
+  uniqueIndex('uq_operacoes_conta_hash').on(t.contaCorretoraId, t.hashDedupe),
+]);
+
+// Última cotação conhecida por ativo (alimentada manualmente agora,
+// pelo conector Nelogica na Fase 3). Compartilhada entre usuários.
+export const cotacoesCache = pgTable('cotacoes_cache', {
+  ativo: text('ativo').primaryKey(),
+  preco: numeric('preco', { precision: 18, scale: 6 }).notNull(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Relations ──────────────────────────────────────────────────
 export const lojasRelations = relations(lojas, ({ many }) => ({
   usuarios: many(usuarios),
@@ -274,6 +340,18 @@ export const gastosRelations = relations(gastos, ({ one }) => ({
   loja: one(lojas, { fields: [gastos.lojaId], references: [lojas.id] }),
   usuario: one(usuarios, { fields: [gastos.usuarioId], references: [usuarios.id] }),
   contaRecorrente: one(contasRecorrentes, { fields: [gastos.contaRecorrenteId], references: [contasRecorrentes.id] }),
+}));
+
+export const contasCorretoraRelations = relations(contasCorretora, ({ one, many }) => ({
+  loja: one(lojas, { fields: [contasCorretora.lojaId], references: [lojas.id] }),
+  usuario: one(usuarios, { fields: [contasCorretora.usuarioId], references: [usuarios.id] }),
+  operacoes: many(operacoes),
+}));
+
+export const operacoesRelations = relations(operacoes, ({ one }) => ({
+  loja: one(lojas, { fields: [operacoes.lojaId], references: [lojas.id] }),
+  usuario: one(usuarios, { fields: [operacoes.usuarioId], references: [usuarios.id] }),
+  contaCorretora: one(contasCorretora, { fields: [operacoes.contaCorretoraId], references: [contasCorretora.id] }),
 }));
 
 export const contasRecorrentesRelations = relations(contasRecorrentes, ({ one, many }) => ({

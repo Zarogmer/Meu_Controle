@@ -19,6 +19,7 @@ import {
   Receipt,
   TrendingDown,
   Building2,
+  ChartCandlestick,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ export const allNavItems: NavItem[] = [
   { href: '/gastos', label: 'Gastos', icon: TrendingDown, requiresTenant: true },
   { href: '/deficit', label: 'Contas a Receber', icon: Wallet, requiresTenant: true },
   { href: '/tarefas', label: 'Rotinas', icon: ClipboardList, requiresTenant: true },
+  { href: '/investimentos', label: 'Investimentos', icon: ChartCandlestick, minRole: 'owner', requiresTenant: true },
   { href: '/equipe', label: 'Equipe', icon: Users, minRole: 'owner', requiresTenant: true },
   { href: '/admin', label: 'Painel da Plataforma', icon: Shield, minRole: 'super_admin' },
 ];

@@ -10,6 +10,7 @@
     "build": "next build --webpack",
     "start": "node .next/standalone/server.js",
     "lint": "eslint",
+    "test": "vitest run",
     "db:push": "drizzle-kit push",
     "db:migrate": "node scripts/migrate-all.js",
     "seed:tech": "node scripts/create-super-admin.js",
@@ -57,6 +58,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
